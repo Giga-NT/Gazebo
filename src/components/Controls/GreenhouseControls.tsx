@@ -249,8 +249,8 @@ const GreenhouseControls: React.FC<GreenhouseControlsProps> = ({
             type="number"
             value={params.wallHeight}
             onChange={(e) => onChange('wallHeight', parseFloat(e.target.value))}
-            min="1"
-            max="3"
+            min="2"
+            max="4"
             step="0.1"
           />
         </InputGroup>

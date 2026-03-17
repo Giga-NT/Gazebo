@@ -174,8 +174,6 @@ const GreenhouseWalls: React.FC<GreenhouseWallsProps> = ({
       );
     };
 
-
-
     // Функция создания одинарной двери с рамкой по кромке
     const createSingleDoor = (position: THREE.Vector3, isBackDoor: boolean, key: string) => {
       const doorColor = darkenColor(new THREE.Color(params.coverColor), 0.2);
@@ -198,11 +196,11 @@ const GreenhouseWalls: React.FC<GreenhouseWallsProps> = ({
       const ventElement = createDoorVent(ventPosition, isBackDoor, `${key}-vent`, SINGLE_DOOR_WIDTH);
 
       return (
-        <>
+        <group key={key}>
           {doorFrameElements}
           {ventElement}
-          <group 
-            position={doorsOpen ? [centerX + openOffsetX, centerY, centerZ + openOffsetZ] : [centerX, centerY, centerZ]} 
+          <group
+            position={doorsOpen ? [centerX + openOffsetX, centerY, centerZ + openOffsetZ] : [centerX, centerY, centerZ]}
             rotation={doorsOpen ? [0, openRotationY, 0] : [0, 0, 0]}
           >
             {/* Основное полотно */}
@@ -259,161 +257,157 @@ const GreenhouseWalls: React.FC<GreenhouseWallsProps> = ({
               <meshStandardMaterial color="darkgray" />
             </mesh>
           </group>
-        </>
+        </group>
       );
     };
 
     // Функция создания двойной двери с рамкой на каждой створке
-const createDoubleDoor = (position: THREE.Vector3, isBackDoor: boolean, key: string) => {
-  const doorColor = darkenColor(new THREE.Color(params.coverColor), 0.2);
-  const centerX = position.x-0.1;
-  const centerY = position.y;
-  const centerZ = position.z;
-  const halfWidth = DOUBLE_DOOR_HALF_WIDTH; // 0.6 м
+    const createDoubleDoor = (position: THREE.Vector3, isBackDoor: boolean, key: string) => {
+      const doorColor = darkenColor(new THREE.Color(params.coverColor), 0.2);
+      const centerX = position.x-0.1;
+      const centerY = position.y;
+      const centerZ = position.z;
+      const halfWidth = DOUBLE_DOOR_HALF_WIDTH; // 0.6 м
 
-  // Логика открытия — такая же, как у одинарной двери
-  const openOffsetX = isBackDoor ? 0.4 : 0.4;
-  const openOffsetZ = isBackDoor ? 0.2 : -0.4;
-  const openRotationY = isBackDoor ? Math.PI / 2 : -Math.PI / 2;
+      const openOffsetX = isBackDoor ? 0.4 : 0.4;
+      const openOffsetZ = isBackDoor ? 0.2 : -0.4;
+      const openRotationY = isBackDoor ? Math.PI / 2 : -Math.PI / 2;
 
-  // Элементы дверного проёма (рама)
-  const doorFrameElements: React.ReactNode[] = [];
-  doorFrameElements.push(
-    <Beam key={`${key}-top-beam`} start={new THREE.Vector3(-halfWidth, DOOR_HEIGHT, centerZ)} end={new THREE.Vector3(halfWidth, DOOR_HEIGHT, centerZ)} dimensions={frameDimensions} color={params.frameColor} />,
-  );
+      // Элементы дверного проёма (рама)
+      const doorFrameElements: React.ReactNode[] = [];
+      doorFrameElements.push(
+        <Beam key={`${key}-top-beam`} start={new THREE.Vector3(-halfWidth, DOOR_HEIGHT, centerZ)} end={new THREE.Vector3(halfWidth, DOOR_HEIGHT, centerZ)} dimensions={frameDimensions} color={params.frameColor} />,
+      );
 
-  // Форточка над дверью
-  const ventPosition = new THREE.Vector3(0, 0, centerZ);
-  const ventElement = createDoorVent(ventPosition, isBackDoor, `${key}-vent`, halfWidth * 2);
+      // Форточка над дверью
+      const ventPosition = new THREE.Vector3(0, 0, centerZ);
+      const ventElement = createDoorVent(ventPosition, isBackDoor, `${key}-vent`, halfWidth * 2);
 
-  return (
-    <>
-      {doorFrameElements}
-      {ventElement}
+      return (
+        <group key={key}>
+          {doorFrameElements}
+          {ventElement}
 
-      {/* ЛЕВАЯ СТВОРКА — открывается влево */}
-      <group key={`${key}-left`} position={[centerX+0.1 - halfWidth, centerY, centerZ]}>
-        <group
-          position={doorsOpen ? [openOffsetX-0.4, 0, openOffsetZ+0.1] : [0.3, 0, 0]}
-          rotation={doorsOpen ? [0, -openRotationY, 0] : [0, 0, 0]}
-        >
-          <mesh>
-            <boxGeometry args={[halfWidth, DOOR_HEIGHT, DOOR_THICKNESS]} />
-            <meshStandardMaterial 
-              color={doorColor.getStyle()} 
-              roughness={0.8} 
-              metalness={0.2}
-              transparent={true}
-              opacity={params.coverMaterial === 'polycarbonate' ? 0.7 : 1}
-            />
-          </mesh>
+          {/* ЛЕВАЯ СТВОРКА — открывается влево */}
+          <group key={`${key}-left`} position={[centerX+0.1 - halfWidth, centerY, centerZ]}>
+            <group
+              position={doorsOpen ? [openOffsetX-0.4, 0, openOffsetZ+0.1] : [0.3, 0, 0]}
+              rotation={doorsOpen ? [0, -openRotationY, 0] : [0, 0, 0]}
+            >
+              <mesh>
+                <boxGeometry args={[halfWidth, DOOR_HEIGHT, DOOR_THICKNESS]} />
+                <meshStandardMaterial 
+                  color={doorColor.getStyle()} 
+                  roughness={0.8} 
+                  metalness={0.2}
+                  transparent={true}
+                  opacity={params.coverMaterial === 'polycarbonate' ? 0.7 : 1}
+                />
+              </mesh>
 
-          {/* Рамка по кромке */}
-          <group>
-            <mesh position={[0, DOOR_HEIGHT / 2 - TRIM_WIDTH / 2, -DOOR_THICKNESS / 2 - 0.005]}>
-              <boxGeometry args={[halfWidth - 0.01, TRIM_WIDTH, TRIM_WIDTH]} />
-              <meshStandardMaterial color={darkenColor(new THREE.Color(params.frameColor), 0.2)} roughness={0.5} metalness={0.3} />
-            </mesh>
-            <mesh position={[0, -DOOR_HEIGHT / 2 + TRIM_WIDTH / 2, -DOOR_THICKNESS / 2 - 0.005]}>
-              <boxGeometry args={[halfWidth - 0.01, TRIM_WIDTH, TRIM_WIDTH]} />
-              <meshStandardMaterial color={darkenColor(new THREE.Color(params.frameColor), 0.2)} roughness={0.5} metalness={0.3} />
-            </mesh>
-            <mesh position={[-halfWidth / 2 + TRIM_WIDTH / 2, 0, -DOOR_THICKNESS / 2 - 0.005]}>
-              <boxGeometry args={[TRIM_WIDTH, DOOR_HEIGHT - 0.01, TRIM_WIDTH]} />
-              <meshStandardMaterial color={darkenColor(new THREE.Color(params.frameColor), 0.2)} roughness={0.5} metalness={0.3} />
-            </mesh>
-            <mesh position={[halfWidth / 2 - TRIM_WIDTH / 2, 0, -DOOR_THICKNESS / 2 - 0.005]}>
-              <boxGeometry args={[TRIM_WIDTH, DOOR_HEIGHT - 0.01, TRIM_WIDTH]} />
-              <meshStandardMaterial color={darkenColor(new THREE.Color(params.frameColor), 0.2)} roughness={0.5} metalness={0.3} />
-            </mesh>
+              {/* Рамка по кромке */}
+              <group>
+                <mesh position={[0, DOOR_HEIGHT / 2 - TRIM_WIDTH / 2, -DOOR_THICKNESS / 2 - 0.005]}>
+                  <boxGeometry args={[halfWidth - 0.01, TRIM_WIDTH, TRIM_WIDTH]} />
+                  <meshStandardMaterial color={darkenColor(new THREE.Color(params.frameColor), 0.2)} roughness={0.5} metalness={0.3} />
+                </mesh>
+                <mesh position={[0, -DOOR_HEIGHT / 2 + TRIM_WIDTH / 2, -DOOR_THICKNESS / 2 - 0.005]}>
+                  <boxGeometry args={[halfWidth - 0.01, TRIM_WIDTH, TRIM_WIDTH]} />
+                  <meshStandardMaterial color={darkenColor(new THREE.Color(params.frameColor), 0.2)} roughness={0.5} metalness={0.3} />
+                </mesh>
+                <mesh position={[-halfWidth / 2 + TRIM_WIDTH / 2, 0, -DOOR_THICKNESS / 2 - 0.005]}>
+                  <boxGeometry args={[TRIM_WIDTH, DOOR_HEIGHT - 0.01, TRIM_WIDTH]} />
+                  <meshStandardMaterial color={darkenColor(new THREE.Color(params.frameColor), 0.2)} roughness={0.5} metalness={0.3} />
+                </mesh>
+                <mesh position={[halfWidth / 2 - TRIM_WIDTH / 2, 0, -DOOR_THICKNESS / 2 - 0.005]}>
+                  <boxGeometry args={[TRIM_WIDTH, DOOR_HEIGHT - 0.01, TRIM_WIDTH]} />
+                  <meshStandardMaterial color={darkenColor(new THREE.Color(params.frameColor), 0.2)} roughness={0.5} metalness={0.3} />
+                </mesh>
+              </group>
+
+              {/* Ручка — на внутренней стороне */}
+              <mesh position={[halfWidth/2 - 0.1, 0, -(DOOR_THICKNESS / 2 + 0.01)]}>
+                <cylinderGeometry args={[0.015, 0.015, 0.15, 16]} />
+                <meshStandardMaterial color="black" />
+              </mesh>
+
+              {/* Петли — на левом краю (внешнем) */}
+              <mesh position={[-halfWidth / 2, -0.7, -(DOOR_THICKNESS / 2)]}>
+                <cylinderGeometry args={[0.02, 0.02, 0.1, 16]} />
+                <meshStandardMaterial color="darkgray" />
+              </mesh>
+              <mesh position={[-halfWidth / 2, 0, -(DOOR_THICKNESS / 2)]}>
+                <cylinderGeometry args={[0.02, 0.02, 0.1, 16]} />
+                <meshStandardMaterial color="darkgray" />
+              </mesh>
+              <mesh position={[-halfWidth / 2, 0.7, -(DOOR_THICKNESS / 2)]}>
+                <cylinderGeometry args={[0.02, 0.02, 0.1, 16]} />
+                <meshStandardMaterial color="darkgray" />
+              </mesh>
+            </group>
           </group>
 
-          {/* Ручка — на внутренней стороне */}
-          <mesh position={[halfWidth/2 - 0.1, 0, -(DOOR_THICKNESS / 2 + 0.01)]}>
-            <cylinderGeometry args={[0.015, 0.015, 0.15, 16]} />
-            <meshStandardMaterial color="black" />
-          </mesh>
+          {/* ПРАВАЯ СТВОРКА — открывается вправо */}
+          <group key={`${key}-right`} position={[centerX-0.2 + halfWidth, centerY, centerZ]}>
+            <group
+              position={doorsOpen ? [openOffsetX-0.1, 0, openOffsetZ+0.1] : [0, 0, 0]}
+              rotation={doorsOpen ? [0, openRotationY, 0] : [0, 0, 0]}
+            >
+              <mesh>
+                <boxGeometry args={[halfWidth, DOOR_HEIGHT, DOOR_THICKNESS]} />
+                <meshStandardMaterial 
+                  color={doorColor.getStyle()} 
+                  roughness={0.8} 
+                  metalness={0.2}
+                  transparent={true}
+                  opacity={params.coverMaterial === 'polycarbonate' ? 0.7 : 1}
+                />
+              </mesh>
 
-			// Петли — на левом краю (внешнем)
-			<mesh position={[-halfWidth / 2, -0.7, -(DOOR_THICKNESS / 2)]}>
-			  <cylinderGeometry args={[0.02, 0.02, 0.1, 16]} />
-			  <meshStandardMaterial color="darkgray" />
-			</mesh>
-			<mesh position={[-halfWidth / 2, 0, -(DOOR_THICKNESS / 2)]}>
-			  <cylinderGeometry args={[0.02, 0.02, 0.1, 16]} />
-			  <meshStandardMaterial color="darkgray" />
-			</mesh>
-			<mesh position={[-halfWidth / 2, 0.7, -(DOOR_THICKNESS / 2)]}>
-			  <cylinderGeometry args={[0.02, 0.02, 0.1, 16]} />
-			  <meshStandardMaterial color="darkgray" />
-			</mesh>
-        </group>
-      </group>
+              {/* Рамка */}
+              <group>
+                <mesh position={[0, DOOR_HEIGHT / 2 - TRIM_WIDTH / 2, -DOOR_THICKNESS / 2 - 0.005]}>
+                  <boxGeometry args={[halfWidth - 0.01, TRIM_WIDTH, TRIM_WIDTH]} />
+                  <meshStandardMaterial color={darkenColor(new THREE.Color(params.frameColor), 0.2)} roughness={0.5} metalness={0.3} />
+                </mesh>
+                <mesh position={[0, -DOOR_HEIGHT / 2 + TRIM_WIDTH / 2, -DOOR_THICKNESS / 2 - 0.005]}>
+                  <boxGeometry args={[halfWidth - 0.01, TRIM_WIDTH, TRIM_WIDTH]} />
+                  <meshStandardMaterial color={darkenColor(new THREE.Color(params.frameColor), 0.2)} roughness={0.5} metalness={0.3} />
+                </mesh>
+                <mesh position={[-halfWidth / 2 + TRIM_WIDTH / 2, 0, -DOOR_THICKNESS / 2 - 0.005]}>
+                  <boxGeometry args={[TRIM_WIDTH, DOOR_HEIGHT - 0.01, TRIM_WIDTH]} />
+                  <meshStandardMaterial color={darkenColor(new THREE.Color(params.frameColor), 0.2)} roughness={0.5} metalness={0.3} />
+                </mesh>
+                <mesh position={[halfWidth / 2 - TRIM_WIDTH / 2, 0, -DOOR_THICKNESS / 2 - 0.005]}>
+                  <boxGeometry args={[TRIM_WIDTH, DOOR_HEIGHT - 0.01, TRIM_WIDTH]} />
+                  <meshStandardMaterial color={darkenColor(new THREE.Color(params.frameColor), 0.2)} roughness={0.5} metalness={0.3} />
+                </mesh>
+              </group>
 
-      {/* ПРАВАЯ СТВОРКА — открывается вправо */}
-      <group key={`${key}-right`} position={[centerX-0.2 + halfWidth, centerY, centerZ]}>
-        <group
-          position={doorsOpen ? [openOffsetX-0.1, 0, openOffsetZ+0.1] : [0, 0, 0]}
-          rotation={doorsOpen ? [0, openRotationY, 0] : [0, 0, 0]}
-        >
-          <mesh>
-            <boxGeometry args={[halfWidth, DOOR_HEIGHT, DOOR_THICKNESS]} />
-            <meshStandardMaterial 
-              color={doorColor.getStyle()} 
-              roughness={0.8} 
-              metalness={0.2}
-              transparent={true}
-              opacity={params.coverMaterial === 'polycarbonate' ? 0.7 : 1}
-            />
-          </mesh>
+              {/* Ручка */}
+              <mesh position={[-halfWidth/2 + 0.1, 0, -(DOOR_THICKNESS / 2 + 0.01)]}>
+                <cylinderGeometry args={[0.015, 0.015, 0.15, 16]} />
+                <meshStandardMaterial color="black" />
+              </mesh>
 
-          {/* Рамка */}
-          <group>
-            <mesh position={[0, DOOR_HEIGHT / 2 - TRIM_WIDTH / 2, -DOOR_THICKNESS / 2 - 0.005]}>
-              <boxGeometry args={[halfWidth - 0.01, TRIM_WIDTH, TRIM_WIDTH]} />
-              <meshStandardMaterial color={darkenColor(new THREE.Color(params.frameColor), 0.2)} roughness={0.5} metalness={0.3} />
-            </mesh>
-            <mesh position={[0, -DOOR_HEIGHT / 2 + TRIM_WIDTH / 2, -DOOR_THICKNESS / 2 - 0.005]}>
-              <boxGeometry args={[halfWidth - 0.01, TRIM_WIDTH, TRIM_WIDTH]} />
-              <meshStandardMaterial color={darkenColor(new THREE.Color(params.frameColor), 0.2)} roughness={0.5} metalness={0.3} />
-            </mesh>
-            <mesh position={[-halfWidth / 2 + TRIM_WIDTH / 2, 0, -DOOR_THICKNESS / 2 - 0.005]}>
-              <boxGeometry args={[TRIM_WIDTH, DOOR_HEIGHT - 0.01, TRIM_WIDTH]} />
-              <meshStandardMaterial color={darkenColor(new THREE.Color(params.frameColor), 0.2)} roughness={0.5} metalness={0.3} />
-            </mesh>
-            <mesh position={[halfWidth / 2 - TRIM_WIDTH / 2, 0, -DOOR_THICKNESS / 2 - 0.005]}>
-              <boxGeometry args={[TRIM_WIDTH, DOOR_HEIGHT - 0.01, TRIM_WIDTH]} />
-              <meshStandardMaterial color={darkenColor(new THREE.Color(params.frameColor), 0.2)} roughness={0.5} metalness={0.3} />
-            </mesh>
+              {/* Петли — на правом краю */}
+              <mesh position={[halfWidth / 2, -0.7, -(DOOR_THICKNESS / 2)]}>
+                <cylinderGeometry args={[0.02, 0.02, 0.1, 16]} />
+                <meshStandardMaterial color="darkgray" />
+              </mesh>
+              <mesh position={[halfWidth / 2, 0, -(DOOR_THICKNESS / 2)]}>
+                <cylinderGeometry args={[0.02, 0.02, 0.1, 16]} />
+                <meshStandardMaterial color="darkgray" />
+              </mesh>
+              <mesh position={[halfWidth / 2, 0.7, -(DOOR_THICKNESS / 2)]}>
+                <cylinderGeometry args={[0.02, 0.02, 0.1, 16]} />
+                <meshStandardMaterial color="darkgray" />
+              </mesh>
+            </group>
           </group>
-
-          {/* Ручка */}
-          <mesh position={[-halfWidth/2 + 0.1, 0, -(DOOR_THICKNESS / 2 + 0.01)]}>
-            <cylinderGeometry args={[0.015, 0.015, 0.15, 16]} />
-            <meshStandardMaterial color="black" />
-          </mesh>
-
-          {/* Петли — на правом краю */}
-
-			<mesh position={[halfWidth / 2, -0.7, -(DOOR_THICKNESS / 2)]}>
-			  <cylinderGeometry args={[0.02, 0.02, 0.1, 16]} />
-			  <meshStandardMaterial color="darkgray" />
-			</mesh>
-			<mesh position={[halfWidth / 2, 0, -(DOOR_THICKNESS / 2)]}>
-			  <cylinderGeometry args={[0.02, 0.02, 0.1, 16]} />
-			  <meshStandardMaterial color="darkgray" />
-			</mesh>
-			<mesh position={[halfWidth / 2, 0.7, -(DOOR_THICKNESS / 2)]}>
-			  <cylinderGeometry args={[0.02, 0.02, 0.1, 16]} />
-			  <meshStandardMaterial color="darkgray" />
-			</mesh>
         </group>
-      </group>
-    </>
-  );
-};
-
-
+      );
+    };
 
     // Позиции дверей
     const doorFrontPos = new THREE.Vector3(0, DOOR_HEIGHT / 2, -params.length / 2 - wallOffset - 0.01);
@@ -437,108 +431,108 @@ const createDoubleDoor = (position: THREE.Vector3, isBackDoor: boolean, key: str
     }
 
     // Создание обшивки стен
-const createWallCover = () => {
-  const wallMaterial = new THREE.MeshStandardMaterial({
-    color: params.coverColor,
-    transparent: true,
-    opacity: params.coverMaterial === 'polycarbonate' ? 0.8 : 1,
-    side: THREE.DoubleSide,
-    roughness: 0.3,
-    metalness: 0.1,
-  });
-  const wallSegments: React.ReactNode[] = [];
-  const wallThickness = 0.01;
+    const createWallCover = () => {
+      const wallMaterial = new THREE.MeshStandardMaterial({
+        color: params.coverColor,
+        transparent: true,
+        opacity: params.coverMaterial === 'polycarbonate' ? 0.8 : 1,
+        side: THREE.DoubleSide,
+        roughness: 0.3,
+        metalness: 0.1,
+      });
+      const wallSegments: React.ReactNode[] = [];
+      const wallThickness = 0.01;
 
-  for (let side = 0; side < 4; side++) {
-    const isFront = side === 0;
-    const isBack = side === 2;
-    const isSideWall = side === 1 || side === 3;
-    const hasDoorOnFront = params.hasDoors && (params.doorSide === 'front' || params.doorSide === 'both');
-    const hasDoorOnBack = params.hasDoors && (params.doorSide === 'back' || params.doorSide === 'both');
-    const start = frameCorners[side];
-    const end = frameCorners[(side + 1) % 4];
+      for (let side = 0; side < 4; side++) {
+        const isFront = side === 0;
+        const isBack = side === 2;
+        const isSideWall = side === 1 || side === 3;
+        const hasDoorOnFront = params.hasDoors && (params.doorSide === 'front' || params.doorSide === 'both');
+        const hasDoorOnBack = params.hasDoors && (params.doorSide === 'back' || params.doorSide === 'both');
+        const start = frameCorners[side];
+        const end = frameCorners[(side + 1) % 4];
 
-    if (isSideWall) {
-      // Боковые стенки - рисуем полностью
-      const normal = new THREE.Vector3()
-        .subVectors(end, start)
-        .normalize()
-        .cross(new THREE.Vector3(0, 1, 0))
-        .multiplyScalar(wallThickness);
-      
-      const bl = new THREE.Vector3(start.x, 0, start.z).add(normal);
-      const br = new THREE.Vector3(end.x, 0, end.z).add(normal);
-      const tl = new THREE.Vector3(start.x, params.wallHeight, start.z).add(normal);
-      const tr = new THREE.Vector3(end.x, params.wallHeight, end.z).add(normal);
-      
-      const vertices = [bl.x, bl.y, bl.z, br.x, br.y, br.z, tl.x, tl.y, tl.z, tr.x, tr.y, tr.z];
-      const indices = [0, 1, 2, 1, 3, 2];
-      
-      const geometry = new THREE.BufferGeometry();
-      geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-      geometry.setIndex(indices);
-      geometry.computeVertexNormals();
-      
-      wallSegments.push(<mesh key={`wall-${side}`} geometry={geometry} material={wallMaterial} />);
-    } else {
-      // Передняя или задняя стенка
-      const zPos = isFront ? -params.length/2 - wallOffset : params.length/2 + wallOffset;
-      const hasDoor = (isFront && hasDoorOnFront) || (isBack && hasDoorOnBack);
+        if (isSideWall) {
+          // Боковые стенки - рисуем полностью
+          const normal = new THREE.Vector3()
+            .subVectors(end, start)
+            .normalize()
+            .cross(new THREE.Vector3(0, 1, 0))
+            .multiplyScalar(wallThickness);
+          
+          const bl = new THREE.Vector3(start.x, 0, start.z).add(normal);
+          const br = new THREE.Vector3(end.x, 0, end.z).add(normal);
+          const tl = new THREE.Vector3(start.x, params.wallHeight, start.z).add(normal);
+          const tr = new THREE.Vector3(end.x, params.wallHeight, end.z).add(normal);
+          
+          const vertices = [bl.x, bl.y, bl.z, br.x, br.y, br.z, tl.x, tl.y, tl.z, tr.x, tr.y, tr.z];
+          const indices = [0, 1, 2, 1, 3, 2];
+          
+          const geometry = new THREE.BufferGeometry();
+          geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+          geometry.setIndex(indices);
+          geometry.computeVertexNormals();
+          
+          wallSegments.push(<mesh key={`wall-${side}`} geometry={geometry} material={wallMaterial} />);
+        } else {
+          // Передняя или задняя стенка
+          const zPos = isFront ? -params.length/2 - wallOffset : params.length/2 + wallOffset;
+          const hasDoor = (isFront && hasDoorOnFront) || (isBack && hasDoorOnBack);
 
-      if (hasDoor) {
-        // Если есть дверь - рисуем левый и правый сегменты
-        const doorWidth = useDoubleDoors ? DOUBLE_DOOR_HALF_WIDTH * 2 : SINGLE_DOOR_WIDTH;
+          if (hasDoor) {
+            // Если есть дверь - рисуем левый и правый сегменты
+            const doorWidth = useDoubleDoors ? DOUBLE_DOOR_HALF_WIDTH * 2 : SINGLE_DOOR_WIDTH;
 
-        // Левый сегмент
-        const blLeft = new THREE.Vector3(-params.width/2 - wallOffset, 0, zPos);
-        const brLeft = new THREE.Vector3(-doorWidth/2, 0, zPos);
-        const tlLeft = new THREE.Vector3(-params.width/2 - wallOffset, params.wallHeight, zPos);
-        const trLeft = new THREE.Vector3(-doorWidth/2, params.wallHeight, zPos);
-        
-        const leftVertices = [blLeft.x, blLeft.y, blLeft.z, brLeft.x, brLeft.y, brLeft.z, tlLeft.x, tlLeft.y, tlLeft.z, trLeft.x, trLeft.y, trLeft.z];
-        const leftIndices = [0, 1, 2, 1, 3, 2];
-        
-        const leftGeometry = new THREE.BufferGeometry();
-        leftGeometry.setAttribute('position', new THREE.Float32BufferAttribute(leftVertices, 3));
-        leftGeometry.setIndex(leftIndices);
-        leftGeometry.computeVertexNormals();
-        wallSegments.push(<mesh key={`wall-${side}-left`} geometry={leftGeometry} material={wallMaterial} />);
+            // Левый сегмент
+            const blLeft = new THREE.Vector3(-params.width/2 - wallOffset, 0, zPos);
+            const brLeft = new THREE.Vector3(-doorWidth/2, 0, zPos);
+            const tlLeft = new THREE.Vector3(-params.width/2 - wallOffset, params.wallHeight, zPos);
+            const trLeft = new THREE.Vector3(-doorWidth/2, params.wallHeight, zPos);
+            
+            const leftVertices = [blLeft.x, blLeft.y, blLeft.z, brLeft.x, brLeft.y, brLeft.z, tlLeft.x, tlLeft.y, tlLeft.z, trLeft.x, trLeft.y, trLeft.z];
+            const leftIndices = [0, 1, 2, 1, 3, 2];
+            
+            const leftGeometry = new THREE.BufferGeometry();
+            leftGeometry.setAttribute('position', new THREE.Float32BufferAttribute(leftVertices, 3));
+            leftGeometry.setIndex(leftIndices);
+            leftGeometry.computeVertexNormals();
+            wallSegments.push(<mesh key={`wall-${side}-left`} geometry={leftGeometry} material={wallMaterial} />);
 
-        // Правый сегмент
-        const blRight = new THREE.Vector3(doorWidth/2, 0, zPos);
-        const brRight = new THREE.Vector3(params.width/2 + wallOffset, 0, zPos);
-        const tlRight = new THREE.Vector3(doorWidth/2, params.wallHeight, zPos);
-        const trRight = new THREE.Vector3(params.width/2 + wallOffset, params.wallHeight, zPos);
-        
-        const rightVertices = [blRight.x, blRight.y, blRight.z, brRight.x, brRight.y, brRight.z, tlRight.x, tlRight.y, tlRight.z, trRight.x, trRight.y, trRight.z];
-        const rightIndices = [0, 1, 2, 1, 3, 2];
-        
-        const rightGeometry = new THREE.BufferGeometry();
-        rightGeometry.setAttribute('position', new THREE.Float32BufferAttribute(rightVertices, 3));
-        rightGeometry.setIndex(rightIndices);
-        rightGeometry.computeVertexNormals();
-        wallSegments.push(<mesh key={`wall-${side}-right`} geometry={rightGeometry} material={wallMaterial} />);
-      } else {
-        // Если нет двери - рисуем всю стенку целиком
-        const bl = new THREE.Vector3(-params.width/2 - wallOffset, 0, zPos);
-        const br = new THREE.Vector3(params.width/2 + wallOffset, 0, zPos);
-        const tl = new THREE.Vector3(-params.width/2 - wallOffset, params.wallHeight, zPos);
-        const tr = new THREE.Vector3(params.width/2 + wallOffset, params.wallHeight, zPos);
-        
-        const vertices = [bl.x, bl.y, bl.z, br.x, br.y, br.z, tl.x, tl.y, tl.z, tr.x, tr.y, tr.z];
-        const indices = [0, 1, 2, 1, 3, 2];
-        
-        const geometry = new THREE.BufferGeometry();
-        geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-        geometry.setIndex(indices);
-        geometry.computeVertexNormals();
-        
-        wallSegments.push(<mesh key={`wall-${side}`} geometry={geometry} material={wallMaterial} />);
+            // Правый сегмент
+            const blRight = new THREE.Vector3(doorWidth/2, 0, zPos);
+            const brRight = new THREE.Vector3(params.width/2 + wallOffset, 0, zPos);
+            const tlRight = new THREE.Vector3(doorWidth/2, params.wallHeight, zPos);
+            const trRight = new THREE.Vector3(params.width/2 + wallOffset, params.wallHeight, zPos);
+            
+            const rightVertices = [blRight.x, blRight.y, blRight.z, brRight.x, brRight.y, brRight.z, tlRight.x, tlRight.y, tlRight.z, trRight.x, trRight.y, trRight.z];
+            const rightIndices = [0, 1, 2, 1, 3, 2];
+            
+            const rightGeometry = new THREE.BufferGeometry();
+            rightGeometry.setAttribute('position', new THREE.Float32BufferAttribute(rightVertices, 3));
+            rightGeometry.setIndex(rightIndices);
+            rightGeometry.computeVertexNormals();
+            wallSegments.push(<mesh key={`wall-${side}-right`} geometry={rightGeometry} material={wallMaterial} />);
+          } else {
+            // Если нет двери - рисуем всю стенку целиком
+            const bl = new THREE.Vector3(-params.width/2 - wallOffset, 0, zPos);
+            const br = new THREE.Vector3(params.width/2 + wallOffset, 0, zPos);
+            const tl = new THREE.Vector3(-params.width/2 - wallOffset, params.wallHeight, zPos);
+            const tr = new THREE.Vector3(params.width/2 + wallOffset, params.wallHeight, zPos);
+            
+            const vertices = [bl.x, bl.y, bl.z, br.x, br.y, br.z, tl.x, tl.y, tl.z, tr.x, tr.y, tr.z];
+            const indices = [0, 1, 2, 1, 3, 2];
+            
+            const geometry = new THREE.BufferGeometry();
+            geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+            geometry.setIndex(indices);
+            geometry.computeVertexNormals();
+            
+            wallSegments.push(<mesh key={`wall-${side}`} geometry={geometry} material={wallMaterial} />);
+          }
+        }
       }
-    }
-  }
-  return wallSegments;
-};
+      return wallSegments;
+    };
 
     wallElements.push(...createWallCover());
 

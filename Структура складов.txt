@@ -1,0 +1,24 @@
+src/
+  components/
+    Warehouse/                    # компоненты 3D
+      WarehouseColumns.tsx
+      WarehouseTrusses.tsx
+      WarehousePurlins.tsx
+      WarehouseBracing.tsx
+      WarehouseGates.tsx
+      WarehouseWalls.tsx
+      WarehouseRoof.tsx
+      WarehouseFoundation.tsx     (опционально)
+    Controls/
+      WarehouseControls.tsx       # главная панель управления
+      WarehouseConstructionControls.tsx
+      WarehouseGateControls.tsx
+      WarehouseMaterialControls.tsx
+  types/
+    warehouseTypes.ts              # типы параметров
+  utils/
+    warehouseCostCalculation.ts    # расчёт стоимости
+  pages/                           (можно добавить, но обычно модель рендерится по маршруту)
+    WarehouseModel.tsx             # корневой компонент модели (аналог GazeboModel)
+  services/
+    priceService.ts                # дополнить ценами для склада

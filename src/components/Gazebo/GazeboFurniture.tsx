@@ -129,7 +129,7 @@ const GazeboFurniture: React.FC<GazeboFurnitureProps> = ({ params }) => {
       // Параметры ножек
       const legThickness = 0.06;          // толщина ножки
       const maxLegSpacing = 1.0;          // максимальный шаг между ножками
-      const legOffset = 0.05;              // отступ от края (5 см)
+      const legOffset = 0.15;              // отступ от края (5 см)
 
       const calcLegPositions = (size: number): number[] => {
         const start = legOffset;

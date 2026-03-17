@@ -8,7 +8,8 @@ import { VerifyAccount } from './pages/VerifyAccount';
 import GreenhouseModel from './components/GreenhouseModel/GreenhouseModel';
 import { OrderPage } from './pages/OrderPage';
 import { OrderDetailsPage } from './pages/OrderDetailsPage';
-import GazeboModel from './components/GazeboModel/GazeboModel'; // Добавьте этот импорт
+import GazeboModel from './components/GazeboModel/GazeboModel';
+import WarehouseModel from './components/WarehouseModel/WarehouseModel'; 
 import AdminRoute from './components/AdminRoute';
 import PriceEditor from './components/PriceEditor';
 
@@ -50,6 +51,16 @@ function App() {
           </ProtectedRoute>
         }
       />
+	  
+      <Route
+        path="/warehouse"
+        element={
+          <ProtectedRoute>
+            <WarehouseModel />
+          </ProtectedRoute>
+        }
+      />
+	  
 	  <Route path="/admin/prices" element={
 	    <AdminRoute>
 		<PriceEditor />
