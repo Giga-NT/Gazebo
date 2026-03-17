@@ -1,4 +1,4 @@
-<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/c0e56825-be90-4cf4-bc1d-a6687434bd07" /># Giga FrameConstructor
+# Giga FrameConstructor
 
 **Интерактивный 3D-конфигуратор для производителей и покупателей навесов, теплиц и беседок**
 
@@ -14,7 +14,7 @@
 - **Покупатели**: детально рассмотрите будущее изделие, подберите параметры
 
 ## Демо
-<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/7cdf7c5a-9545-401c-bf2f-1a4e6f09cfd1" />
+<img width="1920" height="925" alt="2026-03-17_18-05-05" src="https://github.com/user-attachments/assets/d4bcb327-8258-412a-9625-d15476c1de22" />
 
 
 ## Быстрый старт
