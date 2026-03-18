@@ -32,13 +32,13 @@
 ## 🖼️ Демо
 
 ### Навесы
-![Навес](https://github.com/user-attachments/assets/d4bcb327-8258-412a-9625-d15476c1de22)
+![Навес](src/screenshots/canopy.png)
 
 ### Теплицы
-*(добавьте скриншот теплицы)*
+![Теплица](src/screenshots/greenhouse.png)
 
 ### Беседки
-*(добавьте скриншот беседки)*
+![Беседка](src/screenshots/gazebo.png)
 
 ## 🚀 Быстрый старт
 
