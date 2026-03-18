@@ -45,14 +45,12 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
+    "start": "craco start",
+    "build": "react-scripts build && node generate-sw-simple.js",
+    "test": "craco test",
     "eject": "react-scripts eject",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d build",
-    "dist": "npm run build && electron-builder --win portable",
-    "package": "npm run build && electron-builder --win nsis"
+    "deploy": "gh-pages -d build"
   },
   "eslintConfig": {
     "extends": [
@@ -84,6 +82,7 @@
     "path-browserify": "^1.0.1",
     "process": "^0.11.10",
     "react-app-rewired": "^2.2.1",
+    "workbox-build": "^7.4.0",
     "workbox-webpack-plugin": "^7.4.0"
   },
   "build": {
