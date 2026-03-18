@@ -35,10 +35,10 @@
 ![Навес](https://github.com/user-attachments/assets/d4bcb327-8258-412a-9625-d15476c1de22)
 
 ### Теплицы
-*(добавьте скриншот теплицы)*
+![Теплица](https://github.com/Giga-NT/FrameConstructor/blob/main/screenshots/greenhouse.png?raw=true)
 
 ### Беседки
-*(добавьте скриншот беседки)*
+![Беседка](https://github.com/Giga-NT/FrameConstructor/blob/main/screenshots/gazebo.png?raw=true)
 
 ## 🚀 Быстрый старт
 
