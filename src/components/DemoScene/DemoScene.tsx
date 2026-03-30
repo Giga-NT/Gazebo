@@ -459,7 +459,7 @@ const CanopyDemoContent: React.FC = () => {
         target={[0, height / 2, 0]}
         autoRotate={!isMobile}
         autoRotateSpeed={0.5}
-        touches={isMobile ? { ONE: 'rotate', TWO: 'dolly' } : undefined}
+        touches={isMobile ? { ONE: 'rotate', TWO: 'dolly' } as any : undefined}
         rotateSpeed={0.8}
         zoomSpeed={1.2}
       />
@@ -643,7 +643,7 @@ const GazeboDemoContent: React.FC = () => {
         target={[0, demoParams.height / 2, 0]}
         autoRotate={!isMobile}
         autoRotateSpeed={0.5}
-        touches={isMobile ? { ONE: 'rotate', TWO: 'dolly' } : undefined}
+        touches={isMobile ? { ONE: 'rotate', TWO: 'dolly' } as any : undefined}
         rotateSpeed={0.8}
         zoomSpeed={1.2}
       />
@@ -720,7 +720,7 @@ const GreenhouseDemoContent: React.FC = () => {
         ventsOpen={ventsOpen}
       />
 
-      <GreenhouseFoundation params={demoParams} />
+
 
       <OrbitControls
         minDistance={isMobile ? Math.max(demoParams.width, demoParams.length) * 1.2 : Math.max(demoParams.width, demoParams.length) * 0.8}
@@ -729,7 +729,7 @@ const GreenhouseDemoContent: React.FC = () => {
         target={[0, demoParams.height / 2, 0]}
         autoRotate={!isMobile}
         autoRotateSpeed={0.5}
-        touches={isMobile ? { ONE: 'rotate', TWO: 'dolly' } : undefined}
+        touches={isMobile ? { ONE: 'rotate', TWO: 'dolly' } as any : undefined}
         rotateSpeed={0.8}
         zoomSpeed={1.2}
       />
