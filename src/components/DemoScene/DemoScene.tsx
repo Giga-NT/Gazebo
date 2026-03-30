@@ -793,7 +793,10 @@ export const DemoScene: React.FC = () => {
     return (
       <div className="demo-scene demo-scene--mobile">
         <div className="demo-scene__image-fallback">
-          <img src="https://via.placeholder.com/600x400/f0f2f5/1e3a5f?text=3D+Demo" alt="3D Demo" className="demo-scene__fallback-image" />
+          <div className="demo-scene__placeholder">
+            <span className="demo-scene__placeholder-icon">🏠</span>
+            <span className="demo-scene__placeholder-text">3D Демо</span>
+          </div>
           <p className="demo-scene__mobile-text">Откройте на компьютере для интерактивного 3D-демо</p>
         </div>
       </div>
@@ -822,6 +825,15 @@ export const DemoScene: React.FC = () => {
             camera={{ position: [8, 5, 8], fov: 50, near: 0.1, far: 1000 }}
             gl={{ antialias: true, alpha: true, preserveDrawingBuffer: false }}
             performance={{ min: 0.5 }}
+            onCreated={({ gl }) => {
+              gl.domElement.addEventListener('webglcontextlost', (event) => {
+                event.preventDefault();
+                console.warn('WebGL context lost, recovering...');
+              });
+              gl.domElement.addEventListener('webglcontextrestored', () => {
+                console.log('WebGL context restored');
+              });
+            }}
           >
             <DemoSceneContent modelType={modelType} isMobile={isMobile} />
           </Canvas>
