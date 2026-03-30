@@ -76,9 +76,10 @@ const Container = styled.div<{ $isMobile: boolean }>`
   flex-direction: ${({ $isMobile }) => ($isMobile ? 'column' : 'row')};
   font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
   overflow: hidden;
+  position: relative;
 `;
 
-const ControlsPanel = styled.div<{ $isMobile: boolean }>`
+const ControlsPanel = styled.div<{ $isMobile: boolean; $isOpen: boolean }>`
   width: ${({ $isMobile }) => ($isMobile ? '100%' : '380px')};
   padding: 20px;
   background: #ffffff;
@@ -86,14 +87,45 @@ const ControlsPanel = styled.div<{ $isMobile: boolean }>`
   flex-shrink: 0;
   box-shadow: ${({ $isMobile }) => ($isMobile ? 'none' : '2px 0 10px rgba(0,0,0,0.1)')};
   z-index: 10;
+  display: ${({ $isOpen }) => ($isOpen ? 'block' : 'none')};
+  max-height: 100vh;
 `;
 
-const ModelView = styled.div<{ $isMobile: boolean }>`
+const ModelView = styled.div<{ $isMobile: boolean; $panelOpen: boolean }>`
   flex: 1;
   position: relative;
-  min-height: ${({ $isMobile }) => ($isMobile ? '60vh' : '100vh')};
+  min-height: ${({ $isMobile, $panelOpen }) => ($isMobile && !$panelOpen ? '100vh' : '60vh')};
   width: 100%;
   background: #f0f2f5;
+`;
+
+const ToggleButton = styled.button`
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 100;
+  background: linear-gradient(135deg, #00a896 0%, #008f7f 100%);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 56px;
+  height: 56px;
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(0, 168, 150, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 24px rgba(0, 168, 150, 0.5);
+  }
+  
+  &:active {
+    transform: scale(0.95);
+  }
 `;
 
 const PrintContainer = styled.div`
@@ -298,7 +330,9 @@ const GreenhouseModel: React.FC = () => {
   const sceneRef = useRef<THREE.Scene>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const location = useLocation();
-  
+
+  const [isPanelOpen, setIsPanelOpen] = useState(true);
+
   const searchParams = new URLSearchParams(location.search);
   const projectId = searchParams.get('project');
   const initialParams = location.state?.projectParams || initialGreenhouseParams;
@@ -649,16 +683,16 @@ useEffect(() => {
 
   return (
     <Container $isMobile={isMobile}>
-      <ControlsPanel $isMobile={isMobile}>
-		<GreenhouseControls 
-		  params={params} 
+      <ControlsPanel $isMobile={isMobile} $isOpen={isPanelOpen}>
+		<GreenhouseControls
+		  params={params}
 		  onChange={handleParamChange}
 		  ventsOpen={ventsOpen}
 		  setVentsOpen={setVentsOpen}
 		/>
       </ControlsPanel>
-      
-      <ModelView $isMobile={isMobile}>
+
+      <ModelView $isMobile={isMobile} $panelOpen={isPanelOpen}>
         <ErrorBoundary>
           <Canvas
             shadows
@@ -687,17 +721,17 @@ useEffect(() => {
 			  shadow-mapSize-height={1024}
 			/>
 			<directionalLight position={[-10, 10, -10]} intensity={0.6} />
-            
+
             {params.type === 'arched' && <ArchedRoof params={params} />}
             {params.type === 'gable' && <GableRoof params={params} />}
-			<GreenhouseWalls 
-			  params={params} 
-			  doorsOpen={doorsOpen} 
+			<GreenhouseWalls
+			  params={params}
+			  doorsOpen={doorsOpen}
 			  setDoorsOpen={setDoorsOpen}
 			  ventsOpen={ventsOpen}
 			/>
-            
-            
+
+
             <OrbitControls
               minDistance={Math.max(params.width, params.length) * 0.8}
               maxDistance={Math.max(params.width, params.length) * 3}
@@ -706,6 +740,16 @@ useEffect(() => {
             />
           </Canvas>
         </ErrorBoundary>
+
+        {/* Toggle Button - только на мобильных */}
+        {isMobile && (
+          <ToggleButton
+            onClick={() => setIsPanelOpen(!isPanelOpen)}
+            title={isPanelOpen ? 'Скрыть панель' : 'Показать панель'}
+          >
+            {isPanelOpen ? '✕' : '⚙️'}
+          </ToggleButton>
+        )}
 
 
 
