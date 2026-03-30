@@ -9,13 +9,16 @@ import GreenhouseModel from './components/GreenhouseModel/GreenhouseModel';
 import { OrderPage } from './pages/OrderPage';
 import { OrderDetailsPage } from './pages/OrderDetailsPage';
 import GazeboModel from './components/GazeboModel/GazeboModel';
-import WarehouseModel from './components/WarehouseModel/WarehouseModel'; 
+import WarehouseModel from './components/WarehouseModel/WarehouseModel';
 import AdminRoute from './components/AdminRoute';
 import PriceEditor from './components/PriceEditor';
+import { PWAInstallPrompt } from './components/UI/PWAInstallPrompt';
 
 function App() {
   return (
-    <Routes>
+    <>
+      <PWAInstallPrompt />
+      <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/verify" element={<VerifyAccount />} />
@@ -84,6 +87,7 @@ function App() {
       />
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
+    </>
   );
 }
 

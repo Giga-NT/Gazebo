@@ -1,0 +1,134 @@
+/* PWA Install Prompt Styles */
+.pwa-install-prompt {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+  padding: 16px 20px;
+  z-index: 1000;
+  animation: slideUp 0.3s ease-out;
+  max-width: calc(100% - 40px);
+  width: 400px;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.pwa-install-prompt__content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pwa-install-prompt__icon {
+  font-size: 32px;
+  flex-shrink: 0;
+}
+
+.pwa-install-prompt__text {
+  flex: 1;
+  min-width: 0;
+}
+
+.pwa-install-prompt__text h3 {
+  margin: 0 0 4px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.pwa-install-prompt__text p {
+  margin: 0;
+  font-size: 13px;
+  color: #666;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pwa-install-prompt__install {
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #00a896 0%, #008f7f 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  white-space: nowrap;
+}
+
+.pwa-install-prompt__install:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 168, 150, 0.3);
+}
+
+.pwa-install-prompt__install:active {
+  transform: translateY(0);
+}
+
+.pwa-install-prompt__dismiss {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: #999;
+  font-size: 20px;
+  cursor: pointer;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, color 0.2s;
+  flex-shrink: 0;
+}
+
+.pwa-install-prompt__dismiss:hover {
+  background: #f0f0f0;
+  color: #666;
+}
+
+/* Mobile styles */
+@media (max-width: 480px) {
+  .pwa-install-prompt {
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+    transform: none;
+    width: auto;
+    padding: 12px 16px;
+  }
+
+  .pwa-install-prompt__content {
+    flex-wrap: wrap;
+  }
+
+  .pwa-install-prompt__text {
+    width: calc(100% - 60px);
+  }
+
+  .pwa-install-prompt__text h3 {
+    font-size: 14px;
+  }
+
+  .pwa-install-prompt__text p {
+    font-size: 12px;
+  }
+
+  .pwa-install-prompt__install {
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+}

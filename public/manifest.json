@@ -18,8 +18,31 @@
   ],
   "start_url": "/",
   "display": "standalone",
-  "theme_color": "#2c3e50",
+  "theme_color": "#00a896",
   "background_color": "#f0f2f5",
   "orientation": "any",
-  "categories": ["business", "productivity", "design"]
+  "categories": ["business", "productivity", "design"],
+  "shortcuts": [
+    {
+      "name": "Навесы",
+      "short_name": "Навесы",
+      "description": "3D конфигуратор навесов",
+      "url": "/frame?type=canopy",
+      "icons": [{ "src": "logo192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Теплицы",
+      "short_name": "Теплицы",
+      "description": "3D конфигуратор теплиц",
+      "url": "/greenhouse",
+      "icons": [{ "src": "logo192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Беседки",
+      "short_name": "Беседки",
+      "description": "3D конфигуратор беседок",
+      "url": "/gazebo",
+      "icons": [{ "src": "logo192.png", "sizes": "192x192" }]
+    }
+  ]
 }
