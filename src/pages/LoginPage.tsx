@@ -207,6 +207,86 @@ export const LoginPage = () => {
                   </li>
                 </ul>
               </div>
+
+              <div className="login-card__info-block">
+                <h3 className="login-card__info-title">Что вас ждет после покупки:</h3>
+                <div className="info-steps">
+                  <div className="info-step">
+                    <div className="info-step__number">1</div>
+                    <div className="info-step__content">
+                      <h4 className="info-step__title">Создание проекта</h4>
+                      <p className="info-step__description">
+                        В конфигураторе вы создаёте 3D-модель навеса, беседки или теплицы 
+                        с точными размерами и подбором материалов
+                      </p>
+                    </div>
+                  </div>
+                  <div className="info-step">
+                    <div className="info-step__number">2</div>
+                    <div className="info-step__content">
+                      <h4 className="info-step__title">Расчёт стоимости</h4>
+                      <p className="info-step__description">
+                        Система автоматически рассчитывает стоимость материалов и работ, 
+                        формирует детальную смету
+                      </p>
+                    </div>
+                  </div>
+                  <div className="info-step">
+                    <div className="info-step__number">3</div>
+                    <div className="info-step__content">
+                      <h4 className="info-step__title">Оформление заказа</h4>
+                      <p className="info-step__description">
+                        Менеджер связывается с вами, уточняет детали, согласовывает сроки 
+                        и заключает договор
+                      </p>
+                    </div>
+                  </div>
+                  <div className="info-step">
+                    <div className="info-step__number">4</div>
+                    <div className="info-step__content">
+                      <h4 className="info-step__title">Производство и монтаж</h4>
+                      <p className="info-step__description">
+                        Изготавливаем конструкцию, доставляем на объект, выполняем монтаж 
+                        под ключ
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="login-card__info-block login-card__info-block--highlight">
+                <h3 className="login-card__info-title">Вы получаете:</h3>
+                <ul className="deliverables-list">
+                  <li className="deliverables-list__item">
+                    <span className="deliverables-list__icon">📋</span>
+                    <div>
+                      <strong>Детальный 3D-проект</strong>
+                      <p>Визуализация конструкции со всех сторон</p>
+                    </div>
+                  </li>
+                  <li className="deliverables-list__item">
+                    <span className="deliverables-list__icon">📊</span>
+                    <div>
+                      <strong>Полную смету</strong>
+                      <p>Расчёт всех материалов и работ с ценами</p>
+                    </div>
+                  </li>
+                  <li className="deliverables-list__item">
+                    <span className="deliverables-list__icon">📐</span>
+                    <div>
+                      <strong>Чертежи и схемы</strong>
+                      <p>Рабочая документация для производства</p>
+                    </div>
+                  </li>
+                  <li className="deliverables-list__item">
+                    <span className="deliverables-list__icon">📄</span>
+                    <div>
+                      <strong>Договор и гарантию</strong>
+                      <p>Официальные документы на конструкцию</p>
+                    </div>
+                  </li>
+                </ul>
+              </div>
             </div>
 
             {/* 3D Demo Scene */}
