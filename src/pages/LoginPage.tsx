@@ -190,7 +190,7 @@ export const LoginPage = () => {
 
               <div className="login-card__benefits">
                 <p className="login-card__benefits-title">
-                  После регистрации вы получите:
+                  После оформления подписки вы получите:
                 </p>
                 <ul className="benefits-list">
                   <li className="benefits-list__item">
@@ -209,14 +209,14 @@ export const LoginPage = () => {
               </div>
 
               <div className="login-card__info-block">
-                <h3 className="login-card__info-title">Что вас ждет после покупки:</h3>
+                <h3 className="login-card__info-title">Как это работает:</h3>
                 <div className="info-steps">
                   <div className="info-step">
                     <div className="info-step__number">1</div>
                     <div className="info-step__content">
-                      <h4 className="info-step__title">Создание проекта</h4>
+                      <h4 className="info-step__title">Клиент создаёт проект</h4>
                       <p className="info-step__description">
-                        В конфигураторе вы создаёте 3D-модель навеса, беседки или теплицы 
+                        В конфигураторе клиент создаёт 3D-модель навеса, беседки или теплицы 
                         с точными размерами и подбором материалов
                       </p>
                     </div>
@@ -224,19 +224,19 @@ export const LoginPage = () => {
                   <div className="info-step">
                     <div className="info-step__number">2</div>
                     <div className="info-step__content">
-                      <h4 className="info-step__title">Расчёт стоимости</h4>
+                      <h4 className="info-step__title">Система считает стоимость</h4>
                       <p className="info-step__description">
-                        Система автоматически рассчитывает стоимость материалов и работ, 
-                        формирует детальную смету
+                        Автоматически рассчитывается стоимость материалов и работ, 
+                        формируется детальная смета
                       </p>
                     </div>
                   </div>
                   <div className="info-step">
                     <div className="info-step__number">3</div>
                     <div className="info-step__content">
-                      <h4 className="info-step__title">Оформление заказа</h4>
+                      <h4 className="info-step__title">Вы получаете заявку</h4>
                       <p className="info-step__description">
-                        Менеджер связывается с вами, уточняет детали, согласовывает сроки 
+                        Менеджер связывается с клиентом, уточняет детали, согласовывает сроки 
                         и заключает договор
                       </p>
                     </div>
@@ -246,7 +246,7 @@ export const LoginPage = () => {
                     <div className="info-step__content">
                       <h4 className="info-step__title">Производство и монтаж</h4>
                       <p className="info-step__description">
-                        Изготавливаем конструкцию, доставляем на объект, выполняем монтаж 
+                        Изготавливаете конструкцию, доставляете на объект, выполняете монтаж 
                         под ключ
                       </p>
                     </div>
@@ -255,34 +255,48 @@ export const LoginPage = () => {
               </div>
 
               <div className="login-card__info-block login-card__info-block--highlight">
-                <h3 className="login-card__info-title">Вы получаете:</h3>
+                <h3 className="login-card__info-title">Возможности для вашего бизнеса:</h3>
                 <ul className="deliverables-list">
                   <li className="deliverables-list__item">
-                    <span className="deliverables-list__icon">📋</span>
+                    <span className="deliverables-list__icon">💼</span>
                     <div>
-                      <strong>Детальный 3D-проект</strong>
-                      <p>Визуализация конструкции со всех сторон</p>
+                      <strong>3D-визуализация для клиентов</strong>
+                      <p>Наглядно показывайте проекты — увеличьте конверсию в продажу</p>
                     </div>
                   </li>
                   <li className="deliverables-list__item">
-                    <span className="deliverables-list__icon">📊</span>
+                    <span className="deliverables-list__icon">💰</span>
                     <div>
-                      <strong>Полную смету</strong>
-                      <p>Расчёт всех материалов и работ с ценами</p>
+                      <strong>Автоматический расчёт стоимости</strong>
+                      <p>Мгновенная смета по параметрам клиента — экономьте время менеджеров</p>
                     </div>
                   </li>
                   <li className="deliverables-list__item">
-                    <span className="deliverables-list__icon">📐</span>
+                    <span className="deliverables-list__icon">📦</span>
                     <div>
-                      <strong>Чертежи и схемы</strong>
-                      <p>Рабочая документация для производства</p>
+                      <strong>Расчёт материалов</strong>
+                      <p>Точный расход металла, поликарбоната, крепежа — без пересорта</p>
+                    </div>
+                  </li>
+                  <li className="deliverables-list__item">
+                    <span className="deliverables-list__icon">📱</span>
+                    <div>
+                      <strong>База проектов клиентов</strong>
+                      <p>Сохраняйте все проекты в облаке — доступ из любой точки</p>
                     </div>
                   </li>
                   <li className="deliverables-list__item">
                     <span className="deliverables-list__icon">📄</span>
                     <div>
-                      <strong>Договор и гарантию</strong>
-                      <p>Официальные документы на конструкцию</p>
+                      <strong>Экспорт в PDF</strong>
+                      <p>Печатайте сметы и проекты для согласования с заказчиком</p>
+                    </div>
+                  </li>
+                  <li className="deliverables-list__item">
+                    <span className="deliverables-list__icon">🚀</span>
+                    <div>
+                      <strong>Ускорение продаж</strong>
+                      <p>Клиент видит проект сразу — быстрее принимает решение о покупке</p>
                     </div>
                   </li>
                 </ul>
