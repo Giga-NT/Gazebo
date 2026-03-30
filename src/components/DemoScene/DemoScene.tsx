@@ -19,6 +19,11 @@ import './DemoScene.css';
 type ModelType = 'canopy' | 'gazebo' | 'greenhouse';
 
 // ============================================================================
+// CONTEXT FOR MOBILE DETECTION
+// ============================================================================
+const MobileContext = React.createContext<boolean>(false);
+
+// ============================================================================
 // GROUND COMPONENT
 // ============================================================================
 const Ground = ({ groundType }: { groundType: 'grass' | 'wood' | 'concrete' }) => {
@@ -203,6 +208,7 @@ const CanopyLathing: React.FC<{
 // CANOPY DEMO COMPONENT (арочный, 8 стоек по 4 с каждой стороны, 4 усиленные фермы, с обрешёткой)
 // ============================================================================
 const CanopyDemoContent: React.FC = () => {
+  const isMobile = React.useContext(MobileContext);
   const width = 6;
   const length = 6;
   const height = 3;
@@ -276,14 +282,14 @@ const CanopyDemoContent: React.FC = () => {
       const lowerEnd = new THREE.Vector3(totalWidth / 2, height, zPos);
       elements.push(<Beam key={`truss-lower-${trussIdx}`} start={lowerStart} end={lowerEnd} dimensions={trussDimensions} color={frameColor} />);
       
-      // Ферма Pratt: вертикальные стойки + диагонали
-      const panelCount = 6; // количество панелей
-      const panelWidth = totalWidth / panelCount;
+      // Ферма с симметричными раскосами (ёлочка)
+      const verticalCount = 6; // 6 вертикальных стоек
+      const panelWidth = totalWidth / verticalCount;
       
-      // Вертикальные стойки (5 штук, строго вертикально)
-      for (let i = 1; i < panelCount; i++) {
+      // Вертикальные стойки (строго вертикально)
+      for (let i = 1; i < verticalCount; i++) {
         const x = -totalWidth / 2 + i * panelWidth;
-        const t = i / panelCount;
+        const t = i / verticalCount;
         const archIndex = Math.floor(t * (points.length - 1));
         const archPoint = points[archIndex];
         
@@ -298,13 +304,14 @@ const CanopyDemoContent: React.FC = () => {
         );
       }
       
-      // Диагональные раскосы (все идут к центру фермы)
-      for (let i = 0; i < panelCount; i++) {
+      // Диагональные раскосы (симметрично от центра - ёлочка)
+      const halfCount = verticalCount / 2; // 3
+      for (let i = 0; i < verticalCount; i++) {
         const x1 = -totalWidth / 2 + i * panelWidth;
         const x2 = -totalWidth / 2 + (i + 1) * panelWidth;
         
-        const t1 = i / panelCount;
-        const t2 = (i + 1) / panelCount;
+        const t1 = i / verticalCount;
+        const t2 = (i + 1) / verticalCount;
         const archIndex1 = Math.floor(t1 * (points.length - 1));
         const archIndex2 = Math.floor(t2 * (points.length - 1));
         const archPoint1 = points[archIndex1];
@@ -313,11 +320,9 @@ const CanopyDemoContent: React.FC = () => {
         const lowerLeft = new THREE.Vector3(x1, height, zPos);
         const lowerRight = new THREE.Vector3(x2, height, zPos);
         
-        // До центра: диагонали идут ↗ (от низа левой к верху правой)
-        // После центра: диагонали идут ↖ (от низа правой к верху левой)
-        const isLeftHalf = i < panelCount / 2;
-        
-        if (isLeftHalf) {
+        // Левая половина: ↗ (от низа левой к верху правой)
+        // Правая половина: ↖ (от низа правой к верху левой)
+        if (i < halfCount) {
           elements.push(
             <Beam
               key={`truss-diagonal-${trussIdx}-${i}`}
@@ -448,12 +453,15 @@ const CanopyDemoContent: React.FC = () => {
       </group>
 
       <OrbitControls
-        minDistance={10}
-        maxDistance={25}
+        minDistance={isMobile ? 15 : 10}
+        maxDistance={isMobile ? 30 : 25}
         enablePan={false}
         target={[0, height / 2, 0]}
-        autoRotate={true}
+        autoRotate={!isMobile}
         autoRotateSpeed={0.5}
+        touches={isMobile ? { ONE: 'rotate', TWO: 'dolly' } : undefined}
+        rotateSpeed={0.8}
+        zoomSpeed={1.2}
       />
     </>
   );
@@ -540,6 +548,7 @@ const GazeboPavementFoundation: React.FC<{ width: number; length: number }> = ({
 // GAZEBO DEMO COMPONENT
 // ============================================================================
 const GazeboDemoContent: React.FC = () => {
+  const isMobile = React.useContext(MobileContext);
   const demoParams: GazeboParams = useMemo<GazeboParams>(() => ({
     width: 5,
     length: 5,
@@ -628,12 +637,15 @@ const GazeboDemoContent: React.FC = () => {
       <GazeboPavementFoundation width={demoParams.width} length={demoParams.length} />
 
       <OrbitControls
-        minDistance={Math.max(demoParams.width, demoParams.length) * 0.8}
-        maxDistance={Math.max(demoParams.width, demoParams.length) * 3}
+        minDistance={isMobile ? Math.max(demoParams.width, demoParams.length) * 1.2 : Math.max(demoParams.width, demoParams.length) * 0.8}
+        maxDistance={isMobile ? Math.max(demoParams.width, demoParams.length) * 4 : Math.max(demoParams.width, demoParams.length) * 3}
         enablePan={false}
         target={[0, demoParams.height / 2, 0]}
-        autoRotate={true}
+        autoRotate={!isMobile}
         autoRotateSpeed={0.5}
+        touches={isMobile ? { ONE: 'rotate', TWO: 'dolly' } : undefined}
+        rotateSpeed={0.8}
+        zoomSpeed={1.2}
       />
     </>
   );
@@ -643,6 +655,7 @@ const GazeboDemoContent: React.FC = () => {
 // GREENHOUSE DEMO COMPONENT
 // ============================================================================
 const GreenhouseDemoContent: React.FC = () => {
+  const isMobile = React.useContext(MobileContext);
   const [doorsOpen] = useState(false);
   const [ventsOpen] = useState(false);
 
@@ -710,12 +723,15 @@ const GreenhouseDemoContent: React.FC = () => {
       <GreenhouseFoundation params={demoParams} />
 
       <OrbitControls
-        minDistance={Math.max(demoParams.width, demoParams.length) * 0.8}
-        maxDistance={Math.max(demoParams.width, demoParams.length) * 3}
+        minDistance={isMobile ? Math.max(demoParams.width, demoParams.length) * 1.2 : Math.max(demoParams.width, demoParams.length) * 0.8}
+        maxDistance={isMobile ? Math.max(demoParams.width, demoParams.length) * 4 : Math.max(demoParams.width, demoParams.length) * 3}
         enablePan={false}
         target={[0, demoParams.height / 2, 0]}
-        autoRotate={true}
+        autoRotate={!isMobile}
         autoRotateSpeed={0.5}
+        touches={isMobile ? { ONE: 'rotate', TWO: 'dolly' } : undefined}
+        rotateSpeed={0.8}
+        zoomSpeed={1.2}
       />
     </>
   );
@@ -724,7 +740,7 @@ const GreenhouseDemoContent: React.FC = () => {
 // ============================================================================
 // SCENE CONTENT
 // ============================================================================
-const DemoSceneContent: React.FC<{ modelType: ModelType }> = ({ modelType }) => {
+const DemoSceneContent: React.FC<{ modelType: ModelType; isMobile: boolean }> = ({ modelType, isMobile }) => {
   const { scene } = useThree();
 
   useEffect(() => {
@@ -733,13 +749,13 @@ const DemoSceneContent: React.FC<{ modelType: ModelType }> = ({ modelType }) => 
   }, [scene]);
 
   return (
-    <>
+    <MobileContext.Provider value={isMobile}>
       {modelType === 'canopy' && <CanopyDemoContent />}
       {modelType === 'gazebo' && <GazeboDemoContent />}
       {modelType === 'greenhouse' && <GreenhouseDemoContent />}
 
       <ContactShadows position={[0, -1.5, 0]} opacity={0.4} scale={20} blur={2} far={4.5} />
-    </>
+    </MobileContext.Provider>
   );
 };
 
@@ -807,7 +823,7 @@ export const DemoScene: React.FC = () => {
             gl={{ antialias: true, alpha: true, preserveDrawingBuffer: false }}
             performance={{ min: 0.5 }}
           >
-            <DemoSceneContent modelType={modelType} />
+            <DemoSceneContent modelType={modelType} isMobile={isMobile} />
           </Canvas>
         </Suspense>
       </div>

@@ -3,6 +3,11 @@
    3D-демо для страницы входа
    ============================================================ */
 
+/* Prevent page zoom on mobile */
+.demo-scene {
+  touch-action: none;
+}
+
 .demo-scene {
   position: relative;
   width: 100%;
