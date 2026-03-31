@@ -6,6 +6,7 @@ import * as THREE from 'three';
 import styled from 'styled-components';
 import Modal from 'react-modal';
 import WarehouseControls from '../Controls/WarehouseControls';
+import './WarehouseModel.css';
 import WarehouseColumns from '../Warehouse/WarehouseColumns';
 import WarehouseTrusses from '../Warehouse/WarehouseTrusses';
 import WarehousePurlins from '../Warehouse/WarehousePurlins';
@@ -173,7 +174,7 @@ const ControlsPanel = styled.div<{ $isMobile: boolean }>`
 const ModelView = styled.div<{ $isMobile: boolean }>`
   flex: 1;
   position: relative;
-  min-height: ${({ $isMobile }) => ($isMobile ? '60vh' : '100vh')};
+  height: 100vh;
   background: #0a1030;
 `;
 
@@ -708,7 +709,8 @@ const WarehouseModel: React.FC = () => {
   const [projectName, setProjectName] = useState('');
   const [screenshot, setScreenshot] = useState<string | null>(null);
   const [isTakingScreenshot, setIsTakingScreenshot] = useState(false);
-  
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
   const isMobile = useIsMobile();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
@@ -806,10 +808,53 @@ const WarehouseModel: React.FC = () => {
 
   return (
     <Container $isMobile={isMobile}>
-      <ControlsPanel $isMobile={isMobile}>
-        <WarehouseControls 
-          params={params} 
-          onChange={handleParamChange} 
+      {/* Burger Button - только на мобильных */}
+      {isMobile && (
+        <button
+          className="warehouse-burger-btn"
+          onClick={() => setIsMenuOpen(true)}
+          aria-label="Открыть меню"
+        >
+          ☰
+        </button>
+      )}
+
+      {/* Overlay */}
+      <div
+        className={`warehouse-overlay ${isMenuOpen ? 'active' : ''}`}
+        onClick={() => setIsMenuOpen(false)}
+      />
+
+      {/* Side Panel */}
+      <div className={`warehouse-side-panel ${isMenuOpen ? 'active' : ''}`}>
+        <div className="warehouse-panel-header">
+          <h3 className="warehouse-panel-title">Настройки склада</h3>
+          <button
+            className="warehouse-panel-close"
+            onClick={() => setIsMenuOpen(false)}
+            aria-label="Закрыть меню"
+          >
+            ✕
+          </button>
+        </div>
+        <div className="warehouse-panel-content">
+          <WarehouseControls
+            params={params}
+            onChange={handleParamChange}
+            costData={costData}
+            gatesOpen={gatesOpen}
+            doorsOpen={doorsOpen}
+            onToggleGates={() => setGatesOpen(!gatesOpen)}
+            onToggleDoors={() => setDoorsOpen(!doorsOpen)}
+          />
+        </div>
+      </div>
+
+      {/* Default Controls Panel - только на десктопе */}
+      <ControlsPanel $isMobile={isMobile} className="warehouse-default-controls">
+        <WarehouseControls
+          params={params}
+          onChange={handleParamChange}
           costData={costData}
           gatesOpen={gatesOpen}
           doorsOpen={doorsOpen}

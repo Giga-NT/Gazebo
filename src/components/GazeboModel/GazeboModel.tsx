@@ -23,64 +23,279 @@ import GazeboGables from '../Gazebo/GazeboGables';
 import { calculateGazeboCost, defaultPrices } from '../../utils/gazeboCostCalculation';
 import { getGazeboPrices } from '../../services/priceService';
 
-// Стилизованные компоненты
-const Container = styled.div<{ $isMobile: boolean }>`
-  display: flex;
-  height: 100vh;
-  width: 100vw;
-  flex-direction: ${({ $isMobile }) => ($isMobile ? 'column' : 'row')};
-  font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-  overflow: hidden;
-  position: relative;
-`;
-
-const ControlsPanel = styled.div<{ $isMobile: boolean; $isOpen: boolean }>`
-  width: ${({ $isMobile }) => ($isMobile ? '100%' : '380px')};
-  padding: 20px;
-  background: #ffffff;
-  overflow-y: auto;
-  flex-shrink: 0;
-  box-shadow: ${({ $isMobile }) => ($isMobile ? 'none' : '2px 0 10px rgba(0,0,0,0.1)')};
-  z-index: 10;
-  display: ${({ $isOpen }) => ($isOpen ? 'block' : 'none')};
-  max-height: 100vh;
-`;
-
-const ModelView = styled.div<{ $isMobile: boolean; $panelOpen: boolean }>`
-  flex: 1;
-  position: relative;
-  min-height: ${({ $isMobile, $panelOpen }) => ($isMobile && !$panelOpen ? '100vh' : '60vh')};
-  width: 100%;
-  background: #f0f2f5;
-`;
-
-const ToggleButton = styled.button`
+// ===== СТИЛИ ДЛЯ МОБИЛЬНОГО МЕНЮ С АККОРДЕОНОМ =====
+const MobileMenuButton = styled.button<{ $isOpen: boolean }>`
   position: fixed;
   bottom: 20px;
-  right: 20px;
-  z-index: 100;
-  background: linear-gradient(135deg, #00a896 0%, #008f7f 100%);
-  color: white;
-  border: none;
-  border-radius: 50%;
+  left: 20px;
+  z-index: 1001;
   width: 56px;
   height: 56px;
-  font-size: 24px;
-  cursor: pointer;
+  border-radius: 50%;
+  background: ${props => props.$isOpen ? '#fff' : 'linear-gradient(135deg, #00a896 0%, #008f7f 100%)'};
+  border: none;
   box-shadow: 0 4px 20px rgba(0, 168, 150, 0.4);
+  cursor: pointer;
   display: flex;
-  align-items: center;
+  flex-direction: column;
   justify-content: center;
+  align-items: center;
+  gap: 6px;
   transition: all 0.3s ease;
-  
-  &:hover {
-    transform: scale(1.1);
-    box-shadow: 0 6px 24px rgba(0, 168, 150, 0.5);
-  }
   
   &:active {
     transform: scale(0.95);
   }
+  
+  @media (min-width: 768px) {
+    display: none;
+  }
+`;
+
+const MenuLine = styled.div<{ $isOpen: boolean; $index: number }>`
+  width: 24px;
+  height: 2px;
+  background: ${props => props.$isOpen ? '#333' : 'white'};
+  border-radius: 2px;
+  transition: all 0.3s ease;
+  transform: ${props => {
+    if (!props.$isOpen) return 'none';
+    if (props.$index === 0) return 'rotate(45deg) translate(5px, 6px)';
+    if (props.$index === 1) return 'none';
+    if (props.$index === 2) return 'rotate(-45deg) translate(5px, -6px)';
+    return 'none';
+  }};
+  opacity: ${props => props.$isOpen && props.$index === 1 ? 0 : 1};
+`;
+
+const MobileOverlay = styled.div<{ $isOpen: boolean }>`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  opacity: ${props => props.$isOpen ? 1 : 0};
+  visibility: ${props => props.$isOpen ? 'visible' : 'hidden'};
+  transition: all 0.3s ease;
+  backdrop-filter: blur(4px);
+  
+  @media (min-width: 768px) {
+    display: none;
+  }
+`;
+
+const MobileMenuPanel = styled.div<{ $isOpen: boolean }>`
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 85%;
+  max-width: 380px;
+  background: #f5f7fa;
+  z-index: 1000;
+  transform: ${props => props.$isOpen ? 'translateX(0)' : 'translateX(-100%)'};
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  
+  @media (min-width: 768px) {
+    display: none;
+  }
+`;
+
+const MobileMenuHeader = styled.div`
+  padding: 20px 20px;
+  background: linear-gradient(135deg, #00a896 0%, #008f7f 100%);
+  color: white;
+  position: relative;
+  
+  h2 {
+    margin: 0;
+    font-size: 1.4rem;
+    font-weight: 700;
+  }
+  
+  p {
+    margin: 8px 0 0;
+    font-size: 0.8rem;
+    opacity: 0.9;
+  }
+`;
+
+const MobileCloseButton = styled.button`
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease;
+  
+  &:active {
+    background: rgba(255, 255, 255, 0.3);
+  }
+`;
+
+const MobileMenuContent = styled.div`
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: #e2e8f0;
+    border-radius: 4px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: #00a896;
+    border-radius: 4px;
+  }
+`;
+
+// ===== СТИЛИ ДЛЯ АККОРДЕОНА =====
+const AccordionSection = styled.div`
+  border-bottom: 1px solid #e2e8f0;
+  background: white;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+`;
+
+const AccordionHeader = styled.div<{ $isOpen: boolean }>`
+  padding: 14px 16px;
+  background: ${props => props.$isOpen ? '#f8fafc' : 'white'};
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.3s ease;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  
+  &:active {
+    background: #f1f5f9;
+    transform: scale(0.99);
+  }
+`;
+
+const AccordionTitle = styled.h4`
+  font-size: 15px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+`;
+
+const AccordionIcon = styled.span<{ $isOpen: boolean }>`
+  font-size: 16px;
+  transform: rotate(${props => props.$isOpen ? '180deg' : '0deg'});
+  transition: transform 0.3s ease;
+  color: #64748b;
+`;
+
+const AccordionContent = styled.div<{ $isOpen: boolean }>`
+  max-height: ${props => props.$isOpen ? '2000px' : '0'};
+  overflow: hidden;
+  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+`;
+
+const AccordionInner = styled.div`
+  padding: 16px;
+  background: white;
+  border-top: 1px solid #eef2f6;
+`;
+
+// ===== КОМПОНЕНТ АККОРДЕОНА =====
+interface AccordionItemProps {
+  title: string;
+  icon?: string;
+  defaultOpen?: boolean;
+  children: React.ReactNode;
+}
+
+const AccordionItem: React.FC<AccordionItemProps> = ({ 
+  title, 
+  icon = '📐', 
+  defaultOpen = false,
+  children 
+}) => {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+
+  return (
+    <AccordionSection>
+      <AccordionHeader $isOpen={isOpen} onClick={() => setIsOpen(!isOpen)}>
+        <AccordionTitle>
+          <span>{icon}</span> {title}
+        </AccordionTitle>
+        <AccordionIcon $isOpen={isOpen}>▼</AccordionIcon>
+      </AccordionHeader>
+      <AccordionContent $isOpen={isOpen}>
+        <AccordionInner>
+          {children}
+        </AccordionInner>
+      </AccordionContent>
+    </AccordionSection>
+  );
+};
+
+// ===== ОСТАЛЬНЫЕ СТИЛИ =====
+const Container = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+`;
+
+const ControlsPanel = styled.div`
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 380px;
+  padding: 20px;
+  background: #ffffff;
+  overflow-y: auto;
+  z-index: 10;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  
+  @media (max-width: 767px) {
+    display: none;
+  }
+`;
+
+const ModelView = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  background: #f0f2f5;
 `;
 
 const PrintContainer = styled.div`
@@ -132,13 +347,17 @@ const useIsMobile = () => {
     };
     checkMobile();
     window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    window.addEventListener('orientationchange', checkMobile);
+    return () => {
+      window.removeEventListener('resize', checkMobile);
+      window.removeEventListener('orientationchange', checkMobile);
+    };
   }, []);
 
   return isMobile;
 };
 
-// Компонент Ground – используем useThree корректно
+// Компонент Ground
 const Ground = ({ groundType }: { groundType: 'grass' | 'wood' | 'concrete' }) => {
   const { scene } = useThree();
 
@@ -180,6 +399,213 @@ const Ground = ({ groundType }: { groundType: 'grass' | 'wood' | 'concrete' }) =
 
 Modal.setAppElement('#root');
 
+// Оборачиваем GazeboControls в компонент с аккордеонами для мобильной версии
+const MobileGazeboControls: React.FC<{
+  params: GazeboParams;
+  onChange: (name: keyof GazeboParams, value: any) => void;
+}> = ({ params, onChange }) => {
+  return (
+    <>
+      <AccordionItem title="Основные параметры" icon="📏" defaultOpen={true}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div>
+            <label style={{ display: 'block', marginBottom: '6px', fontSize: '0.9rem', fontWeight: 500 }}>Длина (м)</label>
+            <input
+              type="number"
+              value={params.length}
+              onChange={(e) => onChange('length', parseFloat(e.target.value))}
+              min="2" max="10" step="0.1"
+              style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ccc' }}
+            />
+          </div>
+          <div>
+            <label style={{ display: 'block', marginBottom: '6px', fontSize: '0.9rem', fontWeight: 500 }}>Ширина (м)</label>
+            <input
+              type="number"
+              value={params.width}
+              onChange={(e) => onChange('width', parseFloat(e.target.value))}
+              min="2" max="10" step="0.1"
+              style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ccc' }}
+            />
+          </div>
+          <div>
+            <label style={{ display: 'block', marginBottom: '6px', fontSize: '0.9rem', fontWeight: 500 }}>Высота (м)</label>
+            <input
+              type="number"
+              value={params.height}
+              onChange={(e) => onChange('height', parseFloat(e.target.value))}
+              min="1.5" max="4" step="0.1"
+              style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ccc' }}
+            />
+          </div>
+          <div>
+            <label style={{ display: 'block', marginBottom: '6px', fontSize: '0.9rem', fontWeight: 500 }}>Тип крыши</label>
+            <select
+              value={params.roofType}
+              onChange={(e) => onChange('roofType', e.target.value as any)}
+              style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ccc' }}
+            >
+              <option value="gable">Двухскатная</option>
+              <option value="arched">Арочная</option>
+              <option value="single">Односкатная</option>
+            </select>
+          </div>
+          <div>
+            <label style={{ display: 'block', marginBottom: '6px', fontSize: '0.9rem', fontWeight: 500 }}>Высота крыши (м)</label>
+            <input
+              type="number"
+              value={params.roofHeight}
+              onChange={(e) => onChange('roofHeight', parseFloat(e.target.value))}
+              min="0.3" max="3" step="0.1"
+              style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ccc' }}
+            />
+          </div>
+          <div>
+            <label style={{ display: 'block', marginBottom: '6px', fontSize: '0.9rem', fontWeight: 500 }}>Свес кровли (м)</label>
+            <input
+              type="number"
+              value={params.overhang}
+              onChange={(e) => onChange('overhang', parseFloat(e.target.value))}
+              min="0" max="0.5" step="0.05"
+              style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ccc' }}
+            />
+          </div>
+          <div>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={params.showRoofCover}
+                onChange={(e) => onChange('showRoofCover', e.target.checked)}
+              />
+              <span style={{ fontSize: '0.9rem' }}>Показать поликарбонатное покрытие</span>
+            </label>
+          </div>
+        </div>
+      </AccordionItem>
+
+      <AccordionItem title="Конструкция" icon="🔧" defaultOpen={false}>
+        <GazeboControls params={params} onChange={onChange} />
+      </AccordionItem>
+
+      <AccordionItem title="Внешний вид" icon="🎨" defaultOpen={false}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div>
+            <label style={{ display: 'block', marginBottom: '6px', fontSize: '0.9rem', fontWeight: 500 }}>Основной материал</label>
+            <select
+              value={params.materialType}
+              onChange={(e) => onChange('materialType', e.target.value as any)}
+              style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ccc' }}
+            >
+              <option value="wood">Дерево</option>
+              <option value="metal">Металл</option>
+              <option value="combined">Комбинированный</option>
+            </select>
+          </div>
+          <div>
+            <label style={{ display: 'block', marginBottom: '6px', fontSize: '0.9rem', fontWeight: 500 }}>Цвет конструкции</label>
+            <input
+              type="color"
+              value={params.color}
+              onChange={(e) => onChange('color', e.target.value)}
+              style={{ width: '100%', height: '40px', borderRadius: '6px', border: '1px solid #ccc' }}
+            />
+          </div>
+          <div>
+            <label style={{ display: 'block', marginBottom: '6px', fontSize: '0.9rem', fontWeight: 500 }}>Цвет крыши</label>
+            <input
+              type="color"
+              value={params.roofColor}
+              onChange={(e) => onChange('roofColor', e.target.value)}
+              style={{ width: '100%', height: '40px', borderRadius: '6px', border: '1px solid #ccc' }}
+            />
+          </div>
+        </div>
+      </AccordionItem>
+
+      <AccordionItem title="Фундамент и пол" icon="🏗️" defaultOpen={false}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div>
+            <label style={{ display: 'block', marginBottom: '6px', fontSize: '0.9rem', fontWeight: 500 }}>Тип фундамента</label>
+            <select
+              value={params.foundationType}
+              onChange={(e) => onChange('foundationType', e.target.value as any)}
+              style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ccc' }}
+            >
+              <option value="wood">Деревянный</option>
+              <option value="concrete">Бетонный</option>
+              <option value="piles">Свайный</option>
+              <option value="none">Без фундамента</option>
+            </select>
+          </div>
+          <div>
+            <label style={{ display: 'block', marginBottom: '6px', fontSize: '0.9rem', fontWeight: 500 }}>Покрытие пола</label>
+            <select
+              value={params.floorType}
+              onChange={(e) => onChange('floorType', e.target.value as any)}
+              style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ccc' }}
+            >
+              <option value="wood">Дерево</option>
+              <option value="tile">Плитка</option>
+              <option value="concrete">Бетон</option>
+              <option value="none">Без пола</option>
+            </select>
+          </div>
+          <div>
+            <label style={{ display: 'block', marginBottom: '6px', fontSize: '0.9rem', fontWeight: 500 }}>Цвет пола</label>
+            <input
+              type="color"
+              value={params.floorColor}
+              onChange={(e) => onChange('floorColor', e.target.value)}
+              style={{ width: '100%', height: '40px', borderRadius: '6px', border: '1px solid #ccc' }}
+            />
+          </div>
+        </div>
+      </AccordionItem>
+
+      <AccordionItem title="Мебель" icon="🪑" defaultOpen={false}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={params.hasFurniture}
+                onChange={(e) => onChange('hasFurniture', e.target.checked)}
+              />
+              <span style={{ fontSize: '0.9rem' }}>Добавить мебель</span>
+            </label>
+          </div>
+          {params.hasFurniture && (
+            <>
+              <div>
+                <label style={{ display: 'block', marginBottom: '6px', fontSize: '0.9rem', fontWeight: 500 }}>Количество скамеек</label>
+                <input
+                  type="number"
+                  value={params.benchCount}
+                  onChange={(e) => onChange('benchCount', parseInt(e.target.value))}
+                  min="1" max="8" step="1"
+                  style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ccc' }}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '6px', fontSize: '0.9rem', fontWeight: 500 }}>Размер стола</label>
+                <select
+                  value={params.tableSize}
+                  onChange={(e) => onChange('tableSize', e.target.value as any)}
+                  style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ccc' }}
+                >
+                  <option value="small">Маленький</option>
+                  <option value="medium">Средний</option>
+                  <option value="large">Большой</option>
+                </select>
+              </div>
+            </>
+          )}
+        </div>
+      </AccordionItem>
+    </>
+  );
+};
+
 const GazeboModel: React.FC = () => {
   const isMounted = useRef(false);
   const isMobile = useIsMobile();
@@ -189,13 +615,13 @@ const GazeboModel: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const location = useLocation();
 
-  const [isPanelOpen, setIsPanelOpen] = useState(true);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const searchParams = new URLSearchParams(location.search);
   const projectId = searchParams.get('project');
 
   const [params, setParams] = useState<GazeboParams>(initialGazeboParams);
-  const [prices, setPrices] = useState(defaultPrices); // цены по умолчанию
+  const [prices, setPrices] = useState(defaultPrices);
   const [saveModalOpen, setSaveModalOpen] = useState(false);
   const [projectName, setProjectName] = useState('');
   const [isCostModalOpen, setIsCostModalOpen] = useState(false);
@@ -203,14 +629,26 @@ const GazeboModel: React.FC = () => {
   const [isTakingScreenshot, setIsTakingScreenshot] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
 
+  // Блокируем скролл при открытом мобильном меню
+  useEffect(() => {
+    if (isMobile && isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isMobile, isMobileMenuOpen]);
+
   // Загрузка цен при монтировании
-useEffect(() => {
-  const loadPrices = async () => {
-    const savedPrices = await getGazeboPrices(); // ← используем обёртку
-    setPrices(savedPrices);
-  };
-  loadPrices();
-}, []);
+  useEffect(() => {
+    const loadPrices = async () => {
+      const savedPrices = await getGazeboPrices();
+      setPrices(savedPrices);
+    };
+    loadPrices();
+  }, []);
 
   const costData = calculateGazeboCost(params, prices);
 
@@ -510,29 +948,78 @@ useEffect(() => {
     </PrintContainer>
   ));
 
+  // Расчёт позиции камеры
+  const getCameraPosition = (): [number, number, number] => {
+    if (!isMobile) {
+      return [
+        params.width * 1.5,
+        params.height * 1.2,
+        params.length * 1.5
+      ];
+    }
+    const maxDim = Math.max(params.width, params.length);
+    return [
+      maxDim * 1.8,
+      params.height * 1.5,
+      maxDim * 1.8
+    ];
+  };
+
   return (
-    <Container $isMobile={isMobile}>
-      <ControlsPanel $isMobile={isMobile} $isOpen={isPanelOpen}>
+    <Container>
+      {/* Десктопная панель управления */}
+      <ControlsPanel>
         <GazeboControls params={params} onChange={handleParamChange} />
       </ControlsPanel>
 
-      <ModelView $isMobile={isMobile} $panelOpen={isPanelOpen}>
+      {/* Мобильное меню с аккордеоном */}
+      {isMobile && (
+        <>
+          <MobileMenuButton $isOpen={isMobileMenuOpen} onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+            <MenuLine $isOpen={isMobileMenuOpen} $index={0} />
+            <MenuLine $isOpen={isMobileMenuOpen} $index={1} />
+            <MenuLine $isOpen={isMobileMenuOpen} $index={2} />
+          </MobileMenuButton>
+          
+          <MobileOverlay $isOpen={isMobileMenuOpen} onClick={() => setIsMobileMenuOpen(false)} />
+          
+          <MobileMenuPanel $isOpen={isMobileMenuOpen}>
+            <MobileMenuHeader>
+              <h2>🏠 Конструктор беседки</h2>
+              <p>Настройте размеры, конструкцию и мебель</p>
+              <MobileCloseButton onClick={() => setIsMobileMenuOpen(false)}>✕</MobileCloseButton>
+            </MobileMenuHeader>
+            <MobileMenuContent>
+              <MobileGazeboControls params={params} onChange={handleParamChange} />
+            </MobileMenuContent>
+          </MobileMenuPanel>
+        </>
+      )}
+
+      {/* 3D сцена */}
+      <ModelView>
         <ErrorBoundary>
           <Canvas
             shadows
             ref={canvasRef}
-            style={{ width: '100%', height: '100%' }}
+            style={{ 
+              width: '100%', 
+              height: '100%',
+              display: 'block',
+              position: 'absolute',
+              top: 0,
+              left: 0
+            }}
             camera={{
-              position: [
-                params.width * (isMobile ? 1.2 : 1.5),
-                params.height * (isMobile ? 1.0 : 1.2),
-                params.length * (isMobile ? 1.2 : 1.5)
-              ],
-              fov: isMobile ? 60 : 50,
+              position: getCameraPosition(),
+              fov: isMobile ? 55 : 50,
               near: 0.1,
               far: 1000
             }}
-            onCreated={({ scene }) => { sceneRef.current = scene; }}
+            onCreated={({ scene, gl }) => {
+              sceneRef.current = scene;
+              gl.setSize(window.innerWidth, window.innerHeight);
+            }}
           >
             <Sky distance={10000} sunPosition={[10, 20, 10]} />
             <Ground groundType={params.groundType} />
@@ -548,7 +1035,6 @@ useEffect(() => {
 
             <GazeboWalls params={params} />
 
-            {/* Двухскатная крыша */}
             {params.roofType === 'gable' && (
               <>
                 <GazeboTrusses params={params} />
@@ -558,7 +1044,6 @@ useEffect(() => {
               </>
             )}
 
-            {/* Односкатная крыша */}
             {params.roofType === 'single' && (
               <>
                 <GazeboTrusses params={params} />
@@ -568,7 +1053,6 @@ useEffect(() => {
               </>
             )}
 
-            {/* Арочная крыша */}
             {params.roofType === 'arched' && (
               <>
                 <GazeboTrusses params={params} />
@@ -582,23 +1066,16 @@ useEffect(() => {
 
             <OrbitControls
               minDistance={Math.max(params.width, params.length) * 0.8}
-              maxDistance={Math.max(params.width, params.length) * 3}
+              maxDistance={Math.max(params.width, params.length) * 4}
               enablePan={!isMobile}
+              enableZoom={true}
+              enableRotate={true}
               target={[0, params.height / 2, 0]}
             />
           </Canvas>
         </ErrorBoundary>
 
-        {/* Toggle Button - только на мобильных */}
-        {isMobile && (
-          <ToggleButton
-            onClick={() => setIsPanelOpen(!isPanelOpen)}
-            title={isPanelOpen ? 'Скрыть панель' : 'Показать панель'}
-          >
-            {isPanelOpen ? '✕' : '⚙️'}
-          </ToggleButton>
-        )}
-
+        {/* Кнопки действий */}
         <div style={{
           position: 'fixed',
           bottom: '20px',

@@ -1,0 +1,136 @@
+/* ============================================================
+   WarehouseModel - Burger Menu Styles
+   ============================================================ */
+
+/* Burger Button */
+.warehouse-burger-btn {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 1000;
+  background: linear-gradient(135deg, #00a896 0%, #008f7f 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  width: 50px;
+  height: 50px;
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(0, 168, 150, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.warehouse-burger-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 24px rgba(0, 168, 150, 0.5);
+}
+
+.warehouse-burger-btn:active {
+  transform: scale(0.95);
+}
+
+/* Overlay */
+.warehouse-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1001;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.warehouse-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Side Panel */
+.warehouse-side-panel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 85%;
+  max-width: 400px;
+  background: #ffffff;
+  z-index: 1002;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+  overflow-y: auto;
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.2);
+}
+
+.warehouse-side-panel.active {
+  transform: translateX(0);
+}
+
+/* Panel Header */
+.warehouse-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #1e3a5f 0%, #2d5a7a 100%);
+  color: white;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.warehouse-panel-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.warehouse-panel-close {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease;
+}
+
+.warehouse-panel-close:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Panel Content */
+.warehouse-panel-content {
+  padding: 20px;
+}
+
+/* Mobile - burger visible in portrait mode */
+@media (orientation: portrait) {
+  .warehouse-default-controls {
+    display: none;
+  }
+}
+
+/* Low height landscape (phones in landscape) */
+@media (orientation: landscape) and (max-height: 500px) {
+  .warehouse-default-controls {
+    display: none;
+  }
+}
+
+/* Desktop - hide burger button (landscape + height > 500px) */
+@media (orientation: landscape) and (min-height: 501px) {
+  .warehouse-burger-btn {
+    display: none;
+  }
+}
