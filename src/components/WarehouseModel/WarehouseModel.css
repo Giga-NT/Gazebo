@@ -157,66 +157,14 @@
   padding: 20px;
 }
 
-/* Orientation Alert - уведомление о перевороте экрана */
-.warehouse-orientation-alert {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, #1e3a5f 0%, #2d5a7a 100%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  z-index: 2000;
-  padding: 40px 20px;
-  text-align: center;
-  color: white;
+/* Показываем бургер и кнопку действий всегда */
+.warehouse-burger-btn,
+.warehouse-actions-btn {
+  display: flex !important;
 }
 
-.warehouse-orientation-alert__icon {
-  font-size: 80px;
-  margin-bottom: 30px;
-  animation: rotate 2s ease-in-out infinite;
-}
-
-@keyframes rotate {
-  0%, 100% {
-    transform: rotate(-90deg);
-  }
-  50% {
-    transform: rotate(0deg);
-  }
-}
-
-.warehouse-orientation-alert__title {
-  font-size: 24px;
-  font-weight: 700;
-  margin-bottom: 16px;
-}
-
-.warehouse-orientation-alert__text {
-  font-size: 16px;
-  line-height: 1.6;
-  max-width: 400px;
-  opacity: 0.9;
-}
-
-.warehouse-orientation-alert__hint {
-  margin-top: 30px;
-  font-size: 14px;
-  opacity: 0.7;
-}
-
-/* Показываем бургер и кнопку действий только в ландшафтном режиме на мобильных */
-@media (orientation: landscape) and (max-height: 500px) {
-  .warehouse-burger-btn,
-  .warehouse-actions-btn {
-    display: flex !important;
-  }
-
-  /* Скрываем стандартную панель в ландшафте */
+/* Скрываем стандартную панель когда есть бургер */
+@media (min-width: 1px) {
   .warehouse-controls-desktop {
     display: none !important;
   }

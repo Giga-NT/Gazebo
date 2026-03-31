@@ -711,26 +711,8 @@ const WarehouseModel: React.FC = () => {
   const [isTakingScreenshot, setIsTakingScreenshot] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isActionsOpen, setIsActionsOpen] = useState(false);
-  const [showOrientationAlert, setShowOrientationAlert] = useState(false);
 
   const isMobile = useIsMobile();
-  
-  // Проверка ориентации экрана
-  useEffect(() => {
-    const checkOrientation = () => {
-      const isLandscape = window.innerWidth > window.innerHeight;
-      setShowOrientationAlert(isMobile && !isLandscape);
-    };
-    
-    checkOrientation();
-    window.addEventListener('resize', checkOrientation);
-    window.addEventListener('orientationchange', checkOrientation);
-    
-    return () => {
-      window.removeEventListener('resize', checkOrientation);
-      window.removeEventListener('orientationchange', checkOrientation);
-    };
-  }, [isMobile]);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
   const printRef = useRef<HTMLDivElement>(null);
@@ -826,195 +808,47 @@ const WarehouseModel: React.FC = () => {
   ];
 
   return (
-    <>
-      {/* Orientation Alert - блокировка портретного режима */}
-      {showOrientationAlert && (
-        <div className="warehouse-orientation-alert">
-          <div className="warehouse-orientation-alert__icon">📱</div>
-          <h2 className="warehouse-orientation-alert__title">
-            Переверните устройство
-          </h2>
-          <p className="warehouse-orientation-alert__text">
-            Для комфортной работы со складом пожалуйста переверните устройство в горизонтальное положение
-          </p>
-          <p className="warehouse-orientation-alert__hint">
-            Конфигуратор работает только в ландшафтном режиме
-          </p>
-        </div>
-      )}
-
-      <Container $isMobile={isMobile}>
-      {/* Burger Button - только в ландшафте на мобильных */}
-      {!showOrientationAlert && isMobile && (
-        <button
-          className="warehouse-burger-btn"
-          onClick={() => setIsMenuOpen(true)}
-          aria-label="Открыть меню"
-        >
-          ☰
-        </button>
-      )}
+    <Container $isMobile={isMobile}>
+      {/* Burger Button - слева */}
+      <button
+        className="warehouse-burger-btn"
+        onClick={() => setIsMenuOpen(true)}
+        aria-label="Открыть меню"
+      >
+        ☰
+      </button>
       
-      {/* Actions Button - только в ландшафте на мобильных */}
-      {!showOrientationAlert && isMobile && (
-        <button
-          className="warehouse-actions-btn"
-          onClick={() => setIsActionsOpen(true)}
-          aria-label="Действия"
-        >
-          ⋮
-        </button>
-      )}
+      {/* Actions Button - справа */}
+      <button
+        className="warehouse-actions-btn"
+        onClick={() => setIsActionsOpen(true)}
+        aria-label="Действия"
+      >
+        ⋮
+      </button>
 
       {/* Overlay */}
-      {!showOrientationAlert && (
-        <div
-          className={`warehouse-overlay ${isMenuOpen || isActionsOpen ? 'active' : ''}`}
-          onClick={() => {
-            setIsMenuOpen(false);
-            setIsActionsOpen(false);
-          }}
-        />
-      )}
+      <div
+        className={`warehouse-overlay ${isMenuOpen || isActionsOpen ? 'active' : ''}`}
+        onClick={() => {
+          setIsMenuOpen(false);
+          setIsActionsOpen(false);
+        }}
+      />
 
       {/* Side Panel - слева */}
-      {!showOrientationAlert && (
-        <>
-          <div className={`warehouse-side-panel ${isMenuOpen ? 'active' : ''}`}>
-            <div className="warehouse-panel-header">
-              <h3 className="warehouse-panel-title">Настройки склада</h3>
-              <button
-                className="warehouse-panel-close"
-                onClick={() => setIsMenuOpen(false)}
-                aria-label="Закрыть меню"
-              >
-                ✕
-              </button>
-            </div>
-            <div className="warehouse-panel-content">
-              <WarehouseControls
-                params={params}
-                onChange={handleParamChange}
-                costData={costData}
-                gatesOpen={gatesOpen}
-                doorsOpen={doorsOpen}
-                onToggleGates={() => setGatesOpen(!gatesOpen)}
-                onToggleDoors={() => setDoorsOpen(!doorsOpen)}
-              />
-            </div>
-          </div>
-          
-          {/* Actions Panel - справа */}
-          <div className={`warehouse-actions-panel ${isActionsOpen ? 'active' : ''}`}>
-            <div className="warehouse-panel-header">
-              <h3 className="warehouse-panel-title">Действия</h3>
-              <button
-                className="warehouse-panel-close"
-                onClick={() => setIsActionsOpen(false)}
-                aria-label="Закрыть"
-              >
-                ✕
-              </button>
-            </div>
-            <div className="warehouse-panel-content">
-              {/* Кнопки действий */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <button
-                  onClick={() => setIsCostModalOpen(true)}
-                  style={{
-                    padding: '14px 18px',
-                    backgroundColor: '#3498db',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    fontSize: '15px',
-                    fontWeight: '600',
-                    boxShadow: '0 4px 12px rgba(52, 152, 219, 0.3)',
-                  }}
-                >
-                  💰 Расчёт стоимости
-                </button>
-                
-                <button
-                  onClick={handleSaveProject}
-                  style={{
-                    padding: '14px 18px',
-                    backgroundColor: '#2ecc71',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    fontSize: '15px',
-                    fontWeight: '600',
-                    boxShadow: '0 4px 12px rgba(46, 204, 113, 0.3)',
-                  }}
-                >
-                  💾 Сохранить проект
-                </button>
-                
-                <button
-                  onClick={handlePrint}
-                  style={{
-                    padding: '14px 18px',
-                    backgroundColor: '#9b59b6',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    fontSize: '15px',
-                    fontWeight: '600',
-                    boxShadow: '0 4px 12px rgba(155, 89, 182, 0.3)',
-                  }}
-                >
-                  🖨️ Печать / PDF
-                </button>
-                
-                <button
-                  onClick={() => navigate('/dashboard')}
-                  style={{
-                    padding: '14px 18px',
-                    backgroundColor: '#6c757d',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    fontSize: '15px',
-                    fontWeight: '600',
-                    boxShadow: '0 4px 12px rgba(108, 117, 125, 0.3)',
-                  }}
-                >
-                  📁 Личный кабинет
-                </button>
-                
-                <button
-                  onClick={() => {
-                    logout();
-                    navigate('/login');
-                  }}
-                  style={{
-                    padding: '14px 18px',
-                    backgroundColor: '#e74c3c',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    fontSize: '15px',
-                    fontWeight: '600',
-                    boxShadow: '0 4px 12px rgba(231, 76, 60, 0.3)',
-                  }}
-                >
-                  🚪 Выйти
-                </button>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
-
-      {/* Default Controls Panel - скрываем в ландшафте на мобильных */}
-      {!showOrientationAlert && (
-        <ControlsPanel $isMobile={isMobile} className={isMobile && window.innerHeight < window.innerWidth ? 'warehouse-controls-desktop' : ''}>
+      <div className={`warehouse-side-panel ${isMenuOpen ? 'active' : ''}`}>
+        <div className="warehouse-panel-header">
+          <h3 className="warehouse-panel-title">Настройки склада</h3>
+          <button
+            className="warehouse-panel-close"
+            onClick={() => setIsMenuOpen(false)}
+            aria-label="Закрыть меню"
+          >
+            ✕
+          </button>
+        </div>
+        <div className="warehouse-panel-content">
           <WarehouseControls
             params={params}
             onChange={handleParamChange}
@@ -1024,8 +858,127 @@ const WarehouseModel: React.FC = () => {
             onToggleGates={() => setGatesOpen(!gatesOpen)}
             onToggleDoors={() => setDoorsOpen(!doorsOpen)}
           />
-        </ControlsPanel>
-      )}
+        </div>
+      </div>
+      
+      {/* Actions Panel - справа */}
+      <div className={`warehouse-actions-panel ${isActionsOpen ? 'active' : ''}`}>
+        <div className="warehouse-panel-header">
+          <h3 className="warehouse-panel-title">Действия</h3>
+          <button
+            className="warehouse-panel-close"
+            onClick={() => setIsActionsOpen(false)}
+            aria-label="Закрыть"
+          >
+            ✕
+          </button>
+        </div>
+        <div className="warehouse-panel-content">
+          {/* Кнопки действий */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <button
+              onClick={() => setIsCostModalOpen(true)}
+              style={{
+                padding: '14px 18px',
+                backgroundColor: '#3498db',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontSize: '15px',
+                fontWeight: '600',
+                boxShadow: '0 4px 12px rgba(52, 152, 219, 0.3)',
+              }}
+            >
+              💰 Расчёт стоимости
+            </button>
+            
+            <button
+              onClick={handleSaveProject}
+              style={{
+                padding: '14px 18px',
+                backgroundColor: '#2ecc71',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontSize: '15px',
+                fontWeight: '600',
+                boxShadow: '0 4px 12px rgba(46, 204, 113, 0.3)',
+              }}
+            >
+              💾 Сохранить проект
+            </button>
+            
+            <button
+              onClick={handlePrint}
+              style={{
+                padding: '14px 18px',
+                backgroundColor: '#9b59b6',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontSize: '15px',
+                fontWeight: '600',
+                boxShadow: '0 4px 12px rgba(155, 89, 182, 0.3)',
+              }}
+            >
+              🖨️ Печать / PDF
+            </button>
+            
+            <button
+              onClick={() => navigate('/dashboard')}
+              style={{
+                padding: '14px 18px',
+                backgroundColor: '#6c757d',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontSize: '15px',
+                fontWeight: '600',
+                boxShadow: '0 4px 12px rgba(108, 117, 125, 0.3)',
+              }}
+            >
+              📁 Личный кабинет
+            </button>
+            
+            <button
+              onClick={() => {
+                logout();
+                navigate('/login');
+              }}
+              style={{
+                padding: '14px 18px',
+                backgroundColor: '#e74c3c',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontSize: '15px',
+                fontWeight: '600',
+                boxShadow: '0 4px 12px rgba(231, 76, 60, 0.3)',
+              }}
+            >
+              🚪 Выйти
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Default Controls Panel - для десктопа */}
+      <ControlsPanel $isMobile={isMobile} className="warehouse-controls-desktop">
+        <WarehouseControls
+          params={params}
+          onChange={handleParamChange}
+          costData={costData}
+          gatesOpen={gatesOpen}
+          doorsOpen={doorsOpen}
+          onToggleGates={() => setGatesOpen(!gatesOpen)}
+          onToggleDoors={() => setDoorsOpen(!doorsOpen)}
+        />
+      </ControlsPanel>
 
       <ModelView $isMobile={isMobile}>
         <ErrorBoundary>
@@ -1086,209 +1039,7 @@ const WarehouseModel: React.FC = () => {
           </Canvas>
         </ErrorBoundary>
 
-        {/* Панель с кнопками действий - только на десктопе */}
-        {!isMobile && (
-        <div style={{
-          position: 'absolute',
-          bottom: '20px',
-          right: '20px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '10px',
-          zIndex: 100
-        }}>
-          <button 
-            onClick={() => setIsCostModalOpen(true)}
-            style={{
-              padding: '12px 18px',
-              backgroundColor: '#3498db',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontSize: '14px',
-              fontWeight: '600',
-              boxShadow: '0 4px 12px rgba(52, 152, 219, 0.3)',
-              transition: 'all 0.3s ease',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              minWidth: '180px'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 8px 20px rgba(52, 152, 219, 0.4)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(52, 152, 219, 0.3)';
-            }}
-          >
-            <span>💰</span> Детальный расчет
-          </button>
-
-          <button 
-            onClick={() => setSaveModalOpen(true)}
-            style={{
-              padding: '12px 18px',
-              backgroundColor: '#2ecc71',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontSize: '14px',
-              fontWeight: '600',
-              boxShadow: '0 4px 12px rgba(46, 204, 113, 0.3)',
-              transition: 'all 0.3s ease',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              minWidth: '180px'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 8px 20px rgba(46, 204, 113, 0.4)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(46, 204, 113, 0.3)';
-            }}
-          >
-            <span>💾</span> Сохранить проект
-          </button>
-
-          <button 
-            onClick={() => setGatesOpen(!gatesOpen)}
-            style={{
-              padding: '12px 18px',
-              backgroundColor: gatesOpen ? '#e67e22' : '#f39c12',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontSize: '14px',
-              fontWeight: '600',
-              boxShadow: gatesOpen ? '0 4px 12px rgba(230, 126, 34, 0.3)' : '0 4px 12px rgba(243, 156, 18, 0.3)',
-              transition: 'all 0.3s ease',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              minWidth: '180px'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = gatesOpen ? '0 8px 20px rgba(230, 126, 34, 0.4)' : '0 8px 20px rgba(243, 156, 18, 0.4)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = gatesOpen ? '0 4px 12px rgba(230, 126, 34, 0.3)' : '0 4px 12px rgba(243, 156, 18, 0.3)';
-            }}
-          >
-            <span>🚪</span> {gatesOpen ? 'Закрыть ворота' : 'Открыть ворота'}
-          </button>
-
-          <button 
-            onClick={() => setDoorsOpen(!doorsOpen)}
-            style={{
-              padding: '12px 18px',
-              backgroundColor: doorsOpen ? '#e67e22' : '#f39c12',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontSize: '14px',
-              fontWeight: '600',
-              boxShadow: doorsOpen ? '0 4px 12px rgba(230, 126, 34, 0.3)' : '0 4px 12px rgba(243, 156, 18, 0.3)',
-              transition: 'all 0.3s ease',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              minWidth: '180px'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = doorsOpen ? '0 8px 20px rgba(230, 126, 34, 0.4)' : '0 8px 20px rgba(243, 156, 18, 0.4)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = doorsOpen ? '0 4px 12px rgba(230, 126, 34, 0.3)' : '0 4px 12px rgba(243, 156, 18, 0.3)';
-            }}
-          >
-            <span>🚪</span> {doorsOpen ? 'Закрыть двери' : 'Открыть двери'}
-          </button>
-
-          <button 
-            onClick={() => navigate('/dashboard')}
-            style={{
-              padding: '12px 18px',
-              backgroundColor: '#6c5ce7',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontSize: '14px',
-              fontWeight: '600',
-              boxShadow: '0 4px 12px rgba(108, 92, 231, 0.3)',
-              transition: 'all 0.3s ease',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              minWidth: '180px',
-              marginTop: '10px'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 8px 20px rgba(108, 92, 231, 0.4)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(108, 92, 231, 0.3)';
-            }}
-          >
-            <span>📊</span> В личный кабинет
-          </button>
-
-          <button 
-            onClick={() => {
-              logout();
-              navigate('/login');
-            }}
-            style={{
-              padding: '12px 18px',
-              backgroundColor: '#e74c3c',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontSize: '14px',
-              fontWeight: '600',
-              boxShadow: '0 4px 12px rgba(231, 76, 60, 0.3)',
-              transition: 'all 0.3s ease',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              minWidth: '180px',
-              marginTop: '10px'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 8px 20px rgba(231, 76, 60, 0.4)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(231, 76, 60, 0.3)';
-            }}
-          >
-            <span>🚪</span> Выйти
-          </button>
-        </div>
-        )}
+        {/* Панель с кнопками действий - скрыта, теперь только в 3 точках */}
 
         {/* Модальное окно сохранения проекта */}
         <SaveProjectModal 
@@ -1363,7 +1114,6 @@ const WarehouseModel: React.FC = () => {
         </div>
       </Modal>
     </Container>
-    </>
   );
 };
 
