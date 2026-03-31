@@ -710,8 +710,27 @@ const WarehouseModel: React.FC = () => {
   const [screenshot, setScreenshot] = useState<string | null>(null);
   const [isTakingScreenshot, setIsTakingScreenshot] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isActionsOpen, setIsActionsOpen] = useState(false);
+  const [showOrientationAlert, setShowOrientationAlert] = useState(false);
 
   const isMobile = useIsMobile();
+  
+  // Проверка ориентации экрана
+  useEffect(() => {
+    const checkOrientation = () => {
+      const isLandscape = window.innerWidth > window.innerHeight;
+      setShowOrientationAlert(isMobile && !isLandscape);
+    };
+    
+    checkOrientation();
+    window.addEventListener('resize', checkOrientation);
+    window.addEventListener('orientationchange', checkOrientation);
+    
+    return () => {
+      window.removeEventListener('resize', checkOrientation);
+      window.removeEventListener('orientationchange', checkOrientation);
+    };
+  }, [isMobile]);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
   const printRef = useRef<HTMLDivElement>(null);
@@ -807,9 +826,26 @@ const WarehouseModel: React.FC = () => {
   ];
 
   return (
-    <Container $isMobile={isMobile}>
-      {/* Burger Button - только на мобильных */}
-      {isMobile && (
+    <>
+      {/* Orientation Alert - блокировка портретного режима */}
+      {showOrientationAlert && (
+        <div className="warehouse-orientation-alert">
+          <div className="warehouse-orientation-alert__icon">📱</div>
+          <h2 className="warehouse-orientation-alert__title">
+            Переверните устройство
+          </h2>
+          <p className="warehouse-orientation-alert__text">
+            Для комфортной работы со складом пожалуйста переверните устройство в горизонтальное положение
+          </p>
+          <p className="warehouse-orientation-alert__hint">
+            Конфигуратор работает только в ландшафтном режиме
+          </p>
+        </div>
+      )}
+
+      <Container $isMobile={isMobile}>
+      {/* Burger Button - только в ландшафте на мобильных */}
+      {!showOrientationAlert && isMobile && (
         <button
           className="warehouse-burger-btn"
           onClick={() => setIsMenuOpen(true)}
@@ -818,26 +854,167 @@ const WarehouseModel: React.FC = () => {
           ☰
         </button>
       )}
+      
+      {/* Actions Button - только в ландшафте на мобильных */}
+      {!showOrientationAlert && isMobile && (
+        <button
+          className="warehouse-actions-btn"
+          onClick={() => setIsActionsOpen(true)}
+          aria-label="Действия"
+        >
+          ⋮
+        </button>
+      )}
 
       {/* Overlay */}
-      <div
-        className={`warehouse-overlay ${isMenuOpen ? 'active' : ''}`}
-        onClick={() => setIsMenuOpen(false)}
-      />
+      {!showOrientationAlert && (
+        <div
+          className={`warehouse-overlay ${isMenuOpen || isActionsOpen ? 'active' : ''}`}
+          onClick={() => {
+            setIsMenuOpen(false);
+            setIsActionsOpen(false);
+          }}
+        />
+      )}
 
-      {/* Side Panel */}
-      <div className={`warehouse-side-panel ${isMenuOpen ? 'active' : ''}`}>
-        <div className="warehouse-panel-header">
-          <h3 className="warehouse-panel-title">Настройки склада</h3>
-          <button
-            className="warehouse-panel-close"
-            onClick={() => setIsMenuOpen(false)}
-            aria-label="Закрыть меню"
-          >
-            ✕
-          </button>
-        </div>
-        <div className="warehouse-panel-content">
+      {/* Side Panel - слева */}
+      {!showOrientationAlert && (
+        <>
+          <div className={`warehouse-side-panel ${isMenuOpen ? 'active' : ''}`}>
+            <div className="warehouse-panel-header">
+              <h3 className="warehouse-panel-title">Настройки склада</h3>
+              <button
+                className="warehouse-panel-close"
+                onClick={() => setIsMenuOpen(false)}
+                aria-label="Закрыть меню"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="warehouse-panel-content">
+              <WarehouseControls
+                params={params}
+                onChange={handleParamChange}
+                costData={costData}
+                gatesOpen={gatesOpen}
+                doorsOpen={doorsOpen}
+                onToggleGates={() => setGatesOpen(!gatesOpen)}
+                onToggleDoors={() => setDoorsOpen(!doorsOpen)}
+              />
+            </div>
+          </div>
+          
+          {/* Actions Panel - справа */}
+          <div className={`warehouse-actions-panel ${isActionsOpen ? 'active' : ''}`}>
+            <div className="warehouse-panel-header">
+              <h3 className="warehouse-panel-title">Действия</h3>
+              <button
+                className="warehouse-panel-close"
+                onClick={() => setIsActionsOpen(false)}
+                aria-label="Закрыть"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="warehouse-panel-content">
+              {/* Кнопки действий */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <button
+                  onClick={() => setIsCostModalOpen(true)}
+                  style={{
+                    padding: '14px 18px',
+                    backgroundColor: '#3498db',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontSize: '15px',
+                    fontWeight: '600',
+                    boxShadow: '0 4px 12px rgba(52, 152, 219, 0.3)',
+                  }}
+                >
+                  💰 Расчёт стоимости
+                </button>
+                
+                <button
+                  onClick={handleSaveProject}
+                  style={{
+                    padding: '14px 18px',
+                    backgroundColor: '#2ecc71',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontSize: '15px',
+                    fontWeight: '600',
+                    boxShadow: '0 4px 12px rgba(46, 204, 113, 0.3)',
+                  }}
+                >
+                  💾 Сохранить проект
+                </button>
+                
+                <button
+                  onClick={handlePrint}
+                  style={{
+                    padding: '14px 18px',
+                    backgroundColor: '#9b59b6',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontSize: '15px',
+                    fontWeight: '600',
+                    boxShadow: '0 4px 12px rgba(155, 89, 182, 0.3)',
+                  }}
+                >
+                  🖨️ Печать / PDF
+                </button>
+                
+                <button
+                  onClick={() => navigate('/dashboard')}
+                  style={{
+                    padding: '14px 18px',
+                    backgroundColor: '#6c757d',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontSize: '15px',
+                    fontWeight: '600',
+                    boxShadow: '0 4px 12px rgba(108, 117, 125, 0.3)',
+                  }}
+                >
+                  📁 Личный кабинет
+                </button>
+                
+                <button
+                  onClick={() => {
+                    logout();
+                    navigate('/login');
+                  }}
+                  style={{
+                    padding: '14px 18px',
+                    backgroundColor: '#e74c3c',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontSize: '15px',
+                    fontWeight: '600',
+                    boxShadow: '0 4px 12px rgba(231, 76, 60, 0.3)',
+                  }}
+                >
+                  🚪 Выйти
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Default Controls Panel - скрываем в ландшафте на мобильных */}
+      {!showOrientationAlert && (
+        <ControlsPanel $isMobile={isMobile} className={isMobile && window.innerHeight < window.innerWidth ? 'warehouse-controls-desktop' : ''}>
           <WarehouseControls
             params={params}
             onChange={handleParamChange}
@@ -847,21 +1024,8 @@ const WarehouseModel: React.FC = () => {
             onToggleGates={() => setGatesOpen(!gatesOpen)}
             onToggleDoors={() => setDoorsOpen(!doorsOpen)}
           />
-        </div>
-      </div>
-
-      {/* Default Controls Panel - только на десктопе */}
-      <ControlsPanel $isMobile={isMobile} className="warehouse-default-controls">
-        <WarehouseControls
-          params={params}
-          onChange={handleParamChange}
-          costData={costData}
-          gatesOpen={gatesOpen}
-          doorsOpen={doorsOpen}
-          onToggleGates={() => setGatesOpen(!gatesOpen)}
-          onToggleDoors={() => setDoorsOpen(!doorsOpen)}
-        />
-      </ControlsPanel>
+        </ControlsPanel>
+      )}
 
       <ModelView $isMobile={isMobile}>
         <ErrorBoundary>
@@ -922,7 +1086,8 @@ const WarehouseModel: React.FC = () => {
           </Canvas>
         </ErrorBoundary>
 
-        {/* Панель с кнопками действий */}
+        {/* Панель с кнопками действий - только на десктопе */}
+        {!isMobile && (
         <div style={{
           position: 'absolute',
           bottom: '20px',
@@ -1123,6 +1288,7 @@ const WarehouseModel: React.FC = () => {
             <span>🚪</span> Выйти
           </button>
         </div>
+        )}
 
         {/* Модальное окно сохранения проекта */}
         <SaveProjectModal 
@@ -1197,6 +1363,7 @@ const WarehouseModel: React.FC = () => {
         </div>
       </Modal>
     </Container>
+    </>
   );
 };
 
