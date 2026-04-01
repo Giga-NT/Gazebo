@@ -1,8 +1,6 @@
 /* ============ UserDashboard.css ============ */
 /* Современный, стильный дизайн */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-
 .dashboard-container {
   max-width: 1280px;
   margin: 0 auto;
@@ -50,7 +48,8 @@
   gap: 12px;
 }
 
-.logout-btn, .admin-btn {
+/* Исправлена контрастность кнопок - теперь белый текст на темном фоне */
+.logout-btn {
   padding: 12px 24px;
   border: none;
   border-radius: 12px;
@@ -61,28 +60,35 @@
   display: flex;
   align-items: center;
   gap: 8px;
-}
-
-.logout-btn {
-  background: #fee2e2;
-  color: #b91c1c;
+  background: #dc2626;
+  color: white;
 }
 
 .logout-btn:hover {
-  background: #fecaca;
+  background: #b91c1c;
   transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(185, 28, 28, 0.15);
+  box-shadow: 0 8px 16px rgba(220, 38, 38, 0.3);
 }
 
 .admin-btn {
-  background: #dbeafe;
-  color: #1e40af;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #2563eb;
+  color: white;
 }
 
 .admin-btn:hover {
-  background: #bfdbfe;
+  background: #1d4ed8;
   transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(30, 64, 175, 0.15);
+  box-shadow: 0 8px 16px rgba(37, 99, 235, 0.3);
 }
 
 /* === User Card === */
@@ -173,43 +179,30 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
+/* Исправлена контрастность tab кнопок */
 .tab-btn {
   flex: 1;
   padding: 14px 24px;
-  background: transparent;
+  background: #e2e8f0;
   border: none;
   border-radius: 12px;
   cursor: pointer;
   font-size: 16px;
   font-weight: 600;
-  color: #4a5568;
+  color: #1e293b;
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
 }
 
-.tab-btn::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  background: rgba(102, 126, 234, 0.1);
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  transition: width 0.6s, height 0.6s;
-}
-
-.tab-btn:hover::before {
-  width: 300px;
-  height: 300px;
-}
-
 .tab-btn.active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
   color: white;
-  box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+}
+
+.tab-btn:hover:not(.active) {
+  background: #cbd5e1;
+  transform: translateY(-1px);
 }
 
 /* === Action Cards === */
@@ -364,7 +357,8 @@
   gap: 12px;
 }
 
-.order-btn, .delete-btn {
+/* Исправлена контрастность кнопок в проектах */
+.order-btn {
   padding: 10px 20px;
   border: none;
   border-radius: 12px;
@@ -375,17 +369,15 @@
   display: flex;
   align-items: center;
   gap: 8px;
-}
-
-.order-btn {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: #059669;
   color: white;
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
 }
 
 .order-btn:hover:not(:disabled) {
+  background: #047857;
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+  box-shadow: 0 8px 20px rgba(5, 150, 105, 0.4);
 }
 
 .order-btn:disabled {
@@ -394,14 +386,24 @@
 }
 
 .delete-btn {
-  background: #fee2e2;
-  color: #b91c1c;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #dc2626;
+  color: white;
 }
 
 .delete-btn:hover:not(:disabled) {
-  background: #fecaca;
+  background: #b91c1c;
   transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(185, 28, 28, 0.15);
+  box-shadow: 0 8px 16px rgba(220, 38, 38, 0.3);
 }
 
 .delete-btn:disabled {
@@ -434,14 +436,14 @@
   border-radius: 10px;
   cursor: pointer;
   font-weight: 600;
-  color: #4a5568;
+  color: #475569;
   transition: all 0.3s ease;
   font-size: 15px;
 }
 
 .orders-tab-btn.active {
   background: white;
-  color: #667eea;
+  color: #3b82f6;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
@@ -580,44 +582,43 @@
 }
 
 .details-btn {
-  background: #667eea;
+  background: #3b82f6;
   color: white;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
 .details-btn:hover {
-  background: #5a67d8;
+  background: #2563eb;
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
 }
 
 .archive-btn {
-  background: #fed7aa;
-  color: #b45309;
+  background: #f59e0b;
+  color: white;
 }
 
 .archive-btn:hover {
-  background: #fbd38d;
+  background: #d97706;
   transform: translateY(-2px);
 }
 
 .restore-btn {
-  background: #c6f6d5;
-  color: #065f46;
+  background: #10b981;
+  color: white;
 }
 
 .restore-btn:hover {
-  background: #9ae6b4;
+  background: #059669;
   transform: translateY(-2px);
 }
 
 .delete-permanently-btn {
-  background: #fed7d7;
-  color: #b91c1c;
+  background: #ef4444;
+  color: white;
 }
 
 .delete-permanently-btn:hover {
-  background: #fbb5b5;
+  background: #dc2626;
   transform: translateY(-2px);
 }
 
