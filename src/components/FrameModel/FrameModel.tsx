@@ -13,6 +13,7 @@ import ConstructionControls from '../Controls/ConstructionControls';
 import TubeControls from '../Controls/TubeControls';
 import AppearanceControls from '../Controls/AppearanceControls';
 import FoundationControls from '../Controls/FoundationControls';
+import './FrameModel.css';
 import { CanopyParams } from '../../types/types';
 import Pillars from '../Beams/Pillars';
 import Foundations from '../Foundations/Foundations';
@@ -576,6 +577,27 @@ useEffect(() => {
     showMaterialInfo: true
   });
 
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isActionsOpen, setIsActionsOpen] = useState(false);
+  const [showOrientationAlert, setShowOrientationAlert] = useState(false);
+
+  // Проверка ориентации экрана
+  useEffect(() => {
+    const checkOrientation = () => {
+      const isLandscape = window.innerWidth > window.innerHeight;
+      setShowOrientationAlert(isMobile && !isLandscape);
+    };
+
+    checkOrientation();
+    window.addEventListener('resize', checkOrientation);
+    window.addEventListener('orientationchange', checkOrientation);
+
+    return () => {
+      window.removeEventListener('resize', checkOrientation);
+      window.removeEventListener('orientationchange', checkOrientation);
+    };
+  }, [isMobile]);
+
   const [isCostModalOpen, setIsCostModalOpen] = useState(false);
   const [saveModalOpen, setSaveModalOpen] = useState(false);
   const [projectName, setProjectName] = useState('');
@@ -808,8 +830,200 @@ const handleSaveProject = async () => {
   );
 
   return (
-    <Container $isMobile={isMobile}>
-      <ControlsPanel $isMobile={isMobile}>
+    <>
+      {/* Orientation Alert - блокировка портретного режима */}
+      {showOrientationAlert && (
+        <div className="frame-orientation-alert">
+          <div style={{ fontSize: '80px', marginBottom: '30px', animation: 'rotate 2s ease-in-out infinite' }}>📱</div>
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>Переверните устройство</h2>
+          <p style={{ fontSize: '16px', lineHeight: '1.6', maxWidth: '400px', opacity: '0.9' }}>
+            Для комфортной работы пожалуйста переверните устройство в горизонтальное положение
+          </p>
+          <p style={{ marginTop: '30px', fontSize: '14px', opacity: '0.7' }}>
+            Конфигуратор работает в ландшафтном режиме
+          </p>
+        </div>
+      )}
+
+      <Container $isMobile={isMobile}>
+      {/* Burger Button - слева (только в ландшафте и без alert) */}
+      {!showOrientationAlert && (
+        <button
+          className="frame-burger-btn"
+          onClick={() => setIsMenuOpen(true)}
+          aria-label="Открыть меню"
+        >
+          ☰
+        </button>
+      )}
+
+      {/* Actions Button - справа (только в ландшафте и без alert) */}
+      {!showOrientationAlert && (
+        <button
+          className="frame-actions-btn"
+          onClick={() => setIsActionsOpen(true)}
+          aria-label="Действия"
+        >
+          ⋮
+        </button>
+      )}
+
+      {/* Overlay */}
+      <div
+        className={`frame-overlay ${isMenuOpen || isActionsOpen ? 'active' : ''}`}
+        onClick={() => {
+          setIsMenuOpen(false);
+          setIsActionsOpen(false);
+        }}
+      />
+
+      {/* Side Panel - слева с контролами */}
+      <div className={`frame-side-panel ${isMenuOpen ? 'active' : ''}`}>
+        <div className="frame-panel-header">
+          <h3 className="frame-panel-title">🏗️ Конструктор навеса</h3>
+          <button
+            className="frame-panel-close"
+            onClick={() => setIsMenuOpen(false)}
+            aria-label="Закрыть меню"
+          >
+            ✕
+          </button>
+        </div>
+        <div className="frame-panel-content">
+          <div style={{ marginBottom: '20px' }}>
+            <h4 style={{ margin: '0 0 15px', fontSize: '16px', color: '#2c3e50' }}>Основные параметры</h4>
+            <MainControls params={params} onChange={handleParamChange} />
+          </div>
+
+          <div style={{ marginBottom: '20px' }}>
+            <h4 style={{ margin: '0 0 15px', fontSize: '16px', color: '#2c3e50' }}>Конструкция</h4>
+            <ConstructionControls params={params} onChange={handleParamChange} />
+          </div>
+
+          <div style={{ marginBottom: '20px' }}>
+            <h4 style={{ margin: '0 0 15px', fontSize: '16px', color: '#2c3e50' }}>Размеры труб</h4>
+            <TubeControls params={params} onChange={handleParamChange} />
+          </div>
+
+          <div style={{ marginBottom: '20px' }}>
+            <h4 style={{ margin: '0 0 15px', fontSize: '16px', color: '#2c3e50' }}>Внешний вид</h4>
+            <AppearanceControls params={params} onChange={handleParamChange} />
+          </div>
+
+          <div style={{ marginBottom: '20px' }}>
+            <h4 style={{ margin: '0 0 15px', fontSize: '16px', color: '#2c3e50' }}>Фундамент</h4>
+            <FoundationControls params={params} onChange={handleParamChange} />
+          </div>
+        </div>
+      </div>
+
+      {/* Actions Panel - справа */}
+      <div className={`frame-actions-panel ${isActionsOpen ? 'active' : ''}`}>
+        <div className="frame-panel-header">
+          <h3 className="frame-panel-title">Действия</h3>
+          <button
+            className="frame-panel-close"
+            onClick={() => setIsActionsOpen(false)}
+            aria-label="Закрыть"
+          >
+            ✕
+          </button>
+        </div>
+        <div className="frame-panel-content">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <button
+              onClick={() => setIsCostModalOpen(true)}
+              style={{
+                padding: '14px 18px',
+                backgroundColor: '#3498db',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontSize: '15px',
+                fontWeight: '600',
+                boxShadow: '0 4px 12px rgba(52, 152, 219, 0.3)',
+              }}
+            >
+              💰 Детальный расчет
+            </button>
+
+            <button
+              onClick={() => setSaveModalOpen(true)}
+              style={{
+                padding: '14px 18px',
+                backgroundColor: '#2ecc71',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontSize: '15px',
+                fontWeight: '600',
+                boxShadow: '0 4px 12px rgba(46, 204, 113, 0.3)',
+              }}
+            >
+              💾 Сохранить проект
+            </button>
+
+            <button
+              onClick={handlePrint}
+              style={{
+                padding: '14px 18px',
+                backgroundColor: '#9b59b6',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontSize: '15px',
+                fontWeight: '600',
+                boxShadow: '0 4px 12px rgba(155, 89, 182, 0.3)',
+              }}
+            >
+              🖨️ Печать / PDF
+            </button>
+
+            <button
+              onClick={() => navigate('/dashboard')}
+              style={{
+                padding: '14px 18px',
+                backgroundColor: '#6c757d',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontSize: '15px',
+                fontWeight: '600',
+                boxShadow: '0 4px 12px rgba(108, 117, 125, 0.3)',
+              }}
+            >
+              📁 Личный кабинет
+            </button>
+
+            <button
+              onClick={() => {
+                logout();
+                navigate('/login');
+              }}
+              style={{
+                padding: '14px 18px',
+                backgroundColor: '#e74c3c',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontSize: '15px',
+                fontWeight: '600',
+                boxShadow: '0 4px 12px rgba(231, 76, 60, 0.3)',
+              }}
+            >
+              🚪 Выйти
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Original Controls Panel - только для десктопа */}
+      <ControlsPanel $isMobile={isMobile} className="frame-controls-desktop">
         <Title>Конструктор навеса</Title>
         
         <ControlSection>
@@ -940,87 +1154,8 @@ const handleSaveProject = async () => {
           </Canvas>
         </ErrorBoundary>
 
-        <div style={{
-          position: 'fixed',
-          bottom: '20px',
-          right: '20px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '10px',
-          zIndex: 100
-        }}>
-          <button 
-            onClick={() => setIsCostModalOpen(true)}
-            style={{
-              padding: '12px 18px',
-              backgroundColor: '#3498db',
-              color: 'white',
-              border: 'none',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontSize: '15px',
-              fontWeight: 500,
-              boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
-            }}
-          >
-            Детальный расчет
-          </button>
-          
-          <button 
-            onClick={() => setSaveModalOpen(true)}
-            style={{
-              padding: '12px 18px',
-              backgroundColor: '#2ecc71',
-              color: 'white',
-              border: 'none',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontSize: '15px',
-              fontWeight: 500,
-              boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
-            }}
-          >
-            Сохранить проект
-          </button>
-          
-          <button 
-            onClick={() => navigate('/dashboard')}
-            style={{
-              padding: '12px 18px',
-              backgroundColor: '#6c757d',
-              color: 'white',
-              border: 'none',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontSize: '15px',
-              fontWeight: 500,
-              boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-              marginTop: '10px'
-            }}
-          >
-            В личный кабинет
-          </button>
-          <button 
-            onClick={() => {
-              logout();
-              navigate('/login');
-            }}
-            style={{
-              padding: '12px 18px',
-              backgroundColor: '#e74c3c',
-              color: 'white',
-              border: 'none',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontSize: '15px',
-              fontWeight: 500,
-              boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-              marginTop: '10px'
-            }}
-          >
-            Выйти
-          </button>
-        </div>
+        {/* Кнопки действий - удалены, теперь только в 3 точках */}
+
       </ModelView>
 
       <SaveProjectModal />
@@ -1086,11 +1221,12 @@ const handleSaveProject = async () => {
 		  </button>
 		</div>
 
-		
-      
+
+
       </Modal>
     </Container>
-	
+	</>
+
   );
 };
 

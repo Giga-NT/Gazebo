@@ -1,0 +1,204 @@
+/* ============================================================
+   FrameModel - Burger Menu Styles
+   ============================================================ */
+
+/* Burger Button - слева */
+.frame-burger-btn {
+  position: fixed;
+  top: 1cm;
+  left: 1cm;
+  z-index: 1000;
+  background: linear-gradient(135deg, #00a896 0%, #008f7f 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  width: 50px;
+  height: 50px;
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(0, 168, 150, 0.4);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.frame-burger-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 24px rgba(0, 168, 150, 0.5);
+}
+
+.frame-burger-btn:active {
+  transform: scale(0.95);
+}
+
+/* Actions Button - справа */
+.frame-actions-btn {
+  position: fixed;
+  top: 1cm;
+  right: 1cm;
+  z-index: 1000;
+  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  width: 50px;
+  height: 50px;
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(52, 152, 219, 0.4);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.frame-actions-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 24px rgba(52, 152, 219, 0.5);
+}
+
+.frame-actions-btn:active {
+  transform: scale(0.95);
+}
+
+/* Overlay */
+.frame-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1001;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.frame-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Side Panel - слева */
+.frame-side-panel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 80%;
+  max-width: 400px;
+  background: #ffffff;
+  z-index: 1002;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+  overflow-y: auto;
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.2);
+}
+
+.frame-side-panel.active {
+  transform: translateX(0);
+}
+
+/* Actions Panel - справа */
+.frame-actions-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 80%;
+  max-width: 350px;
+  background: #ffffff;
+  z-index: 1002;
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+  overflow-y: auto;
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.2);
+}
+
+.frame-actions-panel.active {
+  transform: translateX(0);
+}
+
+/* Panel Header */
+.frame-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #1e3a5f 0%, #2d5a7a 100%);
+  color: white;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.frame-panel-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.frame-panel-close {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease;
+}
+
+.frame-panel-close:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Panel Content */
+.frame-panel-content {
+  padding: 20px;
+}
+
+/* Orientation Alert */
+.frame-orientation-alert {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, #1e3a5f 0%, #2d5a7a 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 40px 20px;
+  text-align: center;
+  color: white;
+}
+
+/* Показываем бургер и кнопку действий только в ландшафте */
+@media (orientation: landscape) {
+  .frame-burger-btn,
+  .frame-actions-btn {
+    display: flex !important;
+  }
+  
+  /* Скрываем стандартную панель в ландшафте */
+  .frame-controls-desktop {
+    display: none !important;
+  }
+}
+
+/* В портрете скрываем */
+@media (orientation: portrait) {
+  .frame-burger-btn,
+  .frame-actions-btn {
+    display: none !important;
+  }
+}
