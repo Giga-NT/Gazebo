@@ -961,7 +961,41 @@ const WarehouseModel: React.FC = () => {
             >
               💾 Сохранить проект
             </button>
-            
+
+            <button
+              onClick={() => setGatesOpen(!gatesOpen)}
+              style={{
+                padding: '14px 18px',
+                backgroundColor: gatesOpen ? '#e67e22' : '#f39c12',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontSize: '15px',
+                fontWeight: '600',
+                boxShadow: '0 4px 12px rgba(243, 156, 18, 0.3)',
+              }}
+            >
+              {gatesOpen ? '🚪 Закрыть ворота' : '🚪 Открыть ворота'}
+            </button>
+
+            <button
+              onClick={() => setDoorsOpen(!doorsOpen)}
+              style={{
+                padding: '14px 18px',
+                backgroundColor: doorsOpen ? '#e67e22' : '#f39c12',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontSize: '15px',
+                fontWeight: '600',
+                boxShadow: '0 4px 12px rgba(243, 156, 18, 0.3)',
+              }}
+            >
+              {doorsOpen ? '🚪 Закрыть двери' : '🚪 Открыть двери'}
+            </button>
+
             <button
               onClick={handlePrint}
               style={{
