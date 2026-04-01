@@ -8,6 +8,7 @@ import Modal from 'react-modal';
 import ErrorBoundary from '../ErrorBoundary';
 import { useAuth } from '../../hooks/useAuth';
 import GazeboControls from '../Controls/GazeboControls';
+import './GazeboModel.css';
 import GableRoof from '../Gazebo/GableRoof';
 import ArchedRoof from '../Gazebo/ArchedRoof';
 import SingleSlopeRoof from '../Gazebo/SingleSlopeRoof';
@@ -627,7 +628,27 @@ const GazeboModel: React.FC = () => {
   const [isCostModalOpen, setIsCostModalOpen] = useState(false);
   const [screenshot, setScreenshot] = useState<string | null>(null);
   const [isTakingScreenshot, setIsTakingScreenshot] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isActionsOpen, setIsActionsOpen] = useState(false);
+  const [showOrientationAlert, setShowOrientationAlert] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
+
+  // Проверка ориентации экрана
+  useEffect(() => {
+    const checkOrientation = () => {
+      const isLandscape = window.innerWidth > window.innerHeight;
+      setShowOrientationAlert(isMobile && !isLandscape);
+    };
+    
+    checkOrientation();
+    window.addEventListener('resize', checkOrientation);
+    window.addEventListener('orientationchange', checkOrientation);
+    
+    return () => {
+      window.removeEventListener('resize', checkOrientation);
+      window.removeEventListener('orientationchange', checkOrientation);
+    };
+  }, [isMobile]);
 
   // Блокируем скролл при открытом мобильном меню
   useEffect(() => {
@@ -966,35 +987,171 @@ const GazeboModel: React.FC = () => {
   };
 
   return (
-    <Container>
-      {/* Десктопная панель управления */}
-      <ControlsPanel>
-        <GazeboControls params={params} onChange={handleParamChange} />
-      </ControlsPanel>
-
-      {/* Мобильное меню с аккордеоном */}
-      {isMobile && (
-        <>
-          <MobileMenuButton $isOpen={isMobileMenuOpen} onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-            <MenuLine $isOpen={isMobileMenuOpen} $index={0} />
-            <MenuLine $isOpen={isMobileMenuOpen} $index={1} />
-            <MenuLine $isOpen={isMobileMenuOpen} $index={2} />
-          </MobileMenuButton>
-          
-          <MobileOverlay $isOpen={isMobileMenuOpen} onClick={() => setIsMobileMenuOpen(false)} />
-          
-          <MobileMenuPanel $isOpen={isMobileMenuOpen}>
-            <MobileMenuHeader>
-              <h2>🏠 Конструктор беседки</h2>
-              <p>Настройте размеры, конструкцию и мебель</p>
-              <MobileCloseButton onClick={() => setIsMobileMenuOpen(false)}>✕</MobileCloseButton>
-            </MobileMenuHeader>
-            <MobileMenuContent>
-              <MobileGazeboControls params={params} onChange={handleParamChange} />
-            </MobileMenuContent>
-          </MobileMenuPanel>
-        </>
+    <>
+      {/* Orientation Alert - блокировка портретного режима */}
+      {showOrientationAlert && (
+        <div className="warehouse-orientation-alert" style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'linear-gradient(135deg, #1e3a5f 0%, #2d5a7a 100%)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 2000,
+          padding: '40px 20px',
+          textAlign: 'center',
+          color: 'white'
+        }}>
+          <div style={{ fontSize: '80px', marginBottom: '30px', animation: 'rotate 2s ease-in-out infinite' }}>📱</div>
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>Переверните устройство</h2>
+          <p style={{ fontSize: '16px', lineHeight: '1.6', maxWidth: '400px', opacity: '0.9' }}>
+            Для комфортной работы пожалуйста переверните устройство в горизонтальное положение
+          </p>
+          <p style={{ marginTop: '30px', fontSize: '14px', opacity: '0.7' }}>
+            Конфигуратор работает в ландшафтном режиме
+          </p>
+        </div>
       )}
+
+      <Container>
+      {!showOrientationAlert && typeof window !== 'undefined' && window.innerWidth > window.innerHeight && (
+        <button
+          className="gazebo-burger-btn"
+          onClick={() => setIsMenuOpen(true)}
+          aria-label="Открыть меню"
+        >
+          ☰
+        </button>
+      )}
+      
+      {/* Actions Button - справа (только в ландшафте и без alert) */}
+      {!showOrientationAlert && typeof window !== 'undefined' && window.innerWidth > window.innerHeight && (
+        <button
+          className="gazebo-actions-btn"
+          onClick={() => setIsActionsOpen(true)}
+          aria-label="Действия"
+        >
+          ⋮
+        </button>
+      )}
+
+      {/* Overlay */}
+      <div
+        className={`gazebo-overlay ${isMenuOpen || isActionsOpen ? 'active' : ''}`}
+        onClick={() => {
+          setIsMenuOpen(false);
+          setIsActionsOpen(false);
+        }}
+      />
+
+      {/* Side Panel - слева с контролами */}
+      <div className={`gazebo-side-panel ${isMenuOpen ? 'active' : ''}`}>
+        <div className="gazebo-panel-header">
+          <h3 className="gazebo-panel-title">🏠 Конструктор беседки</h3>
+          <button
+            className="gazebo-panel-close"
+            onClick={() => setIsMenuOpen(false)}
+            aria-label="Закрыть меню"
+          >
+            ✕
+          </button>
+        </div>
+        <div className="gazebo-panel-content">
+          <GazeboControls params={params} onChange={handleParamChange} />
+        </div>
+      </div>
+      
+      {/* Actions Panel - справа */}
+      <div className={`gazebo-actions-panel ${isActionsOpen ? 'active' : ''}`}>
+        <div className="gazebo-panel-header">
+          <h3 className="gazebo-panel-title">Действия</h3>
+          <button
+            className="gazebo-panel-close"
+            onClick={() => setIsActionsOpen(false)}
+            aria-label="Закрыть"
+          >
+            ✕
+          </button>
+        </div>
+        <div className="gazebo-panel-content">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <button
+              onClick={() => setIsCostModalOpen(true)}
+              style={{
+                padding: '14px 18px',
+                backgroundColor: '#3498db',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontSize: '15px',
+                fontWeight: '600',
+                boxShadow: '0 4px 12px rgba(52, 152, 219, 0.3)',
+              }}
+            >
+              💰 Детальный расчет
+            </button>
+            
+            <button
+              onClick={() => setSaveModalOpen(true)}
+              style={{
+                padding: '14px 18px',
+                backgroundColor: '#2ecc71',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontSize: '15px',
+                fontWeight: '600',
+                boxShadow: '0 4px 12px rgba(46, 204, 113, 0.3)',
+              }}
+            >
+              💾 Сохранить проект
+            </button>
+            
+            <button
+              onClick={() => navigate('/dashboard')}
+              style={{
+                padding: '14px 18px',
+                backgroundColor: '#6c757d',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontSize: '15px',
+                fontWeight: '600',
+                boxShadow: '0 4px 12px rgba(108, 117, 125, 0.3)',
+              }}
+            >
+              📁 Личный кабинет
+            </button>
+            
+            <button
+              onClick={() => {
+                logout();
+                navigate('/login');
+              }}
+              style={{
+                padding: '14px 18px',
+                backgroundColor: '#e74c3c',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontSize: '15px',
+                fontWeight: '600',
+                boxShadow: '0 4px 12px rgba(231, 76, 60, 0.3)',
+              }}
+            >
+              🚪 Выйти
+            </button>
+          </div>
+        </div>
+      </div>
 
       {/* 3D сцена */}
       <ModelView>
@@ -1075,84 +1232,8 @@ const GazeboModel: React.FC = () => {
           </Canvas>
         </ErrorBoundary>
 
-        {/* Кнопки действий */}
-        <div style={{
-          position: 'fixed',
-          bottom: '20px',
-          right: '20px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '10px',
-          zIndex: 100
-        }}>
-          <button
-            onClick={() => setIsCostModalOpen(true)}
-            style={{
-              padding: '12px 18px',
-              backgroundColor: '#3498db',
-              color: 'white',
-              border: 'none',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontSize: '15px',
-              fontWeight: 500,
-              boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
-            }}
-          >
-            Детальный расчет
-          </button>
-          <button
-            onClick={() => setSaveModalOpen(true)}
-            style={{
-              padding: '12px 18px',
-              backgroundColor: '#2ecc71',
-              color: 'white',
-              border: 'none',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontSize: '15px',
-              fontWeight: 500,
-              boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
-            }}
-          >
-            Сохранить проект
-          </button>
-          <button
-            onClick={() => navigate('/dashboard')}
-            style={{
-              padding: '12px 18px',
-              backgroundColor: '#6c757d',
-              color: 'white',
-              border: 'none',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontSize: '15px',
-              fontWeight: 500,
-              boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
-            }}
-          >
-            В личный кабинет
-          </button>
-          <button
-            onClick={() => {
-              logout();
-              navigate('/login');
-            }}
-            style={{
-              padding: '12px 18px',
-              backgroundColor: '#e74c3c',
-              color: 'white',
-              border: 'none',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontSize: '15px',
-              fontWeight: 500,
-              boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
-            }}
-          >
-            Выйти
-          </button>
-        </div>
+        {/* Кнопки действий - удалены, теперь только в 3 точках */}
+
       </ModelView>
 
       <SaveProjectModal />
@@ -1214,7 +1295,9 @@ const GazeboModel: React.FC = () => {
           </button>
         </div>
       </Modal>
+      
     </Container>
+	</>
   );
 };
 

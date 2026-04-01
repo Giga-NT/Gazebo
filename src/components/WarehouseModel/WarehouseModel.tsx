@@ -711,8 +711,26 @@ const WarehouseModel: React.FC = () => {
   const [isTakingScreenshot, setIsTakingScreenshot] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isActionsOpen, setIsActionsOpen] = useState(false);
+  const [showOrientationAlert, setShowOrientationAlert] = useState(false);
 
   const isMobile = useIsMobile();
+  
+  // Проверка ориентации экрана
+  useEffect(() => {
+    const checkOrientation = () => {
+      const isLandscape = window.innerWidth > window.innerHeight;
+      setShowOrientationAlert(isMobile && !isLandscape);
+    };
+    
+    checkOrientation();
+    window.addEventListener('resize', checkOrientation);
+    window.addEventListener('orientationchange', checkOrientation);
+    
+    return () => {
+      window.removeEventListener('resize', checkOrientation);
+      window.removeEventListener('orientationchange', checkOrientation);
+    };
+  }, [isMobile]);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
   const printRef = useRef<HTMLDivElement>(null);
@@ -808,24 +826,58 @@ const WarehouseModel: React.FC = () => {
   ];
 
   return (
-    <Container $isMobile={isMobile}>
-      {/* Burger Button - слева */}
-      <button
-        className="warehouse-burger-btn"
-        onClick={() => setIsMenuOpen(true)}
-        aria-label="Открыть меню"
-      >
-        ☰
-      </button>
-      
-      {/* Actions Button - справа */}
-      <button
-        className="warehouse-actions-btn"
-        onClick={() => setIsActionsOpen(true)}
-        aria-label="Действия"
-      >
-        ⋮
-      </button>
+    <>
+      {/* Orientation Alert - блокировка портретного режима */}
+      {showOrientationAlert && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'linear-gradient(135deg, #1e3a5f 0%, #2d5a7a 100%)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 2000,
+          padding: '40px 20px',
+          textAlign: 'center',
+          color: 'white'
+        }}>
+          <div style={{ fontSize: '80px', marginBottom: '30px', animation: 'rotate 2s ease-in-out infinite' }}>📱</div>
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>Переверните устройство</h2>
+          <p style={{ fontSize: '16px', lineHeight: '1.6', maxWidth: '400px', opacity: '0.9' }}>
+            Для комфортной работы со складом пожалуйста переверните устройство в горизонтальное положение
+          </p>
+          <p style={{ marginTop: '30px', fontSize: '14px', opacity: '0.7' }}>
+            Конфигуратор работает только в ландшафтном режиме
+          </p>
+        </div>
+      )}
+
+      <Container $isMobile={isMobile}>
+      {/* Burger Button - слева (только в ландшафте и без alert) */}
+      {!showOrientationAlert && (
+        <button
+          className="warehouse-burger-btn"
+          onClick={() => setIsMenuOpen(true)}
+          aria-label="Открыть меню"
+        >
+          ☰
+        </button>
+      )}
+
+      {/* Actions Button - справа (только в ландшафте и без alert) */}
+      {!showOrientationAlert && (
+        <button
+          className="warehouse-actions-btn"
+          onClick={() => setIsActionsOpen(true)}
+          aria-label="Действия"
+        >
+          ⋮
+        </button>
+      )}
 
       {/* Overlay */}
       <div
@@ -1114,6 +1166,7 @@ const WarehouseModel: React.FC = () => {
         </div>
       </Modal>
     </Container>
+	</>
   );
 };
 
