@@ -1,3 +1,11 @@
+/**
+ * Copyright (c) 2026 Giga-NT (Григорьев Константин Владимирович)
+ * Все права защищены.
+ * 
+ * License: Proprietary
+ * См. LICENSE файл в корне проекта.
+ */
+
 import React, { useState } from 'react';
 import { GazeboParams } from '../../types/gazeboTypes';
 import { HexColorPicker } from 'react-colorful';

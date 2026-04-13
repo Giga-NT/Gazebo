@@ -1,3 +1,11 @@
+/**
+ * Copyright (c) 2026 Giga-NT (Григорьев Константин Владимирович)
+ * Все права защищены.
+ * 
+ * License: Proprietary
+ * См. LICENSE файл в корне проекта.
+ */
+
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { LoginPage } from './pages/LoginPage';
