@@ -39,7 +39,7 @@ const ButtonGroup = styled.div`
   border-bottom: 1px solid #e2e8f0;
 `;
 
-const Button = styled.button<{ active?: boolean }>`
+const Button = styled.button<{ $active?: boolean }>`
   flex: 1;
   padding: 14px 20px;
   border: none;
@@ -48,11 +48,11 @@ const Button = styled.button<{ active?: boolean }>`
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  background: ${props => props.active ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'white'};
-  color: ${props => props.active ? 'white' : '#4a5568'};
-  box-shadow: ${props => props.active ? '0 8px 16px rgba(102, 126, 234, 0.3)' : '0 2px 8px rgba(0,0,0,0.05)'};
-  border: 1px solid ${props => props.active ? 'transparent' : '#e2e8f0'};
-  
+  background: ${props => props.$active ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'white'};
+  color: ${props => props.$active ? 'white' : '#4a5568'};
+  box-shadow: ${props => props.$active ? '0 8px 16px rgba(102, 126, 234, 0.3)' : '0 2px 8px rgba(0,0,0,0.05)'};
+  border: 1px solid ${props => props.$active ? 'transparent' : '#e2e8f0'};
+
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 12px 24px rgba(102, 126, 234, 0.25);
@@ -64,15 +64,15 @@ const Section = styled.div`
   border-bottom: 1px solid #e2e8f0;
 `;
 
-const SectionHeader = styled.div<{ isOpen: boolean }>`
+const SectionHeader = styled.div<{ $isOpen: boolean }>`
   padding: 18px 24px;
-  background: ${props => props.isOpen ? '#f8fafc' : 'white'};
+  background: ${props => props.$isOpen ? '#f8fafc' : 'white'};
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: space-between;
   transition: background 0.3s ease;
-  
+
   &:hover {
     background: #f1f5f9;
   }
@@ -88,14 +88,14 @@ const SectionTitle = styled.h3`
   gap: 10px;
 `;
 
-const SectionIcon = styled.span<{ isOpen: boolean }>`
+const SectionIcon = styled.span<{ $isOpen: boolean }>`
   font-size: 20px;
-  transform: rotate(${props => props.isOpen ? '180deg' : '0deg'});
+  transform: rotate(${props => props.$isOpen ? '180deg' : '0deg'});
   transition: transform 0.3s ease;
 `;
 
-const SectionContent = styled.div<{ isOpen: boolean }>`
-  max-height: ${props => props.isOpen ? '2000px' : '0'};
+const SectionContent = styled.div<{ $isOpen: boolean }>`
+  max-height: ${props => props.$isOpen ? '2000px' : '0'};
   overflow: hidden;
   transition: max-height 0.5s ease;
   background: white;
@@ -332,23 +332,23 @@ const WarehouseControls: React.FC<WarehouseControlsProps> = ({
       <ControlsCard>
         {/* Кнопки управления */}
         <ButtonGroup>
-          <Button active={gatesOpen} onClick={onToggleGates}>
+          <Button $active={gatesOpen} onClick={onToggleGates}>
             {gatesOpen ? '🚪 Закрыть ворота' : '🚪 Открыть ворота'}
           </Button>
-          <Button active={doorsOpen} onClick={onToggleDoors}>
+          <Button $active={doorsOpen} onClick={onToggleDoors}>
             {doorsOpen ? '🚪 Закрыть двери' : '🚪 Открыть двери'}
           </Button>
         </ButtonGroup>
 
         {/* Габариты */}
         <Section>
-          <SectionHeader isOpen={openSections.dimensions} onClick={() => toggleSection('dimensions')}>
+          <SectionHeader $isOpen={openSections.dimensions} onClick={() => toggleSection('dimensions')}>
             <SectionTitle>
               <span>📐</span> Габариты
             </SectionTitle>
-            <SectionIcon isOpen={openSections.dimensions}>▼</SectionIcon>
+            <SectionIcon $isOpen={openSections.dimensions}>▼</SectionIcon>
           </SectionHeader>
-          <SectionContent isOpen={openSections.dimensions}>
+          <SectionContent $isOpen={openSections.dimensions}>
             <ContentInner>
               <div style={{ marginBottom: '15px' }}>
                 <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>
@@ -452,13 +452,13 @@ const WarehouseControls: React.FC<WarehouseControlsProps> = ({
 
         {/* Каркас */}
         <Section>
-          <SectionHeader isOpen={openSections.frame} onClick={() => toggleSection('frame')}>
+          <SectionHeader $isOpen={openSections.frame} onClick={() => toggleSection('frame')}>
             <SectionTitle>
               <span>🔧</span> Каркас
             </SectionTitle>
-            <SectionIcon isOpen={openSections.frame}>▼</SectionIcon>
+            <SectionIcon $isOpen={openSections.frame}>▼</SectionIcon>
           </SectionHeader>
-          <SectionContent isOpen={openSections.frame}>
+          <SectionContent $isOpen={openSections.frame}>
             <ContentInner>
               <InputGroup>
                 <Label>Материал каркаса</Label>
@@ -611,13 +611,13 @@ const WarehouseControls: React.FC<WarehouseControlsProps> = ({
 
         {/* Ворота */}
         <Section>
-          <SectionHeader isOpen={openSections.gates} onClick={() => toggleSection('gates')}>
+          <SectionHeader $isOpen={openSections.gates} onClick={() => toggleSection('gates')}>
             <SectionTitle>
               <span>🚚</span> Ворота
             </SectionTitle>
-            <SectionIcon isOpen={openSections.gates}>▼</SectionIcon>
+            <SectionIcon $isOpen={openSections.gates}>▼</SectionIcon>
           </SectionHeader>
-          <SectionContent isOpen={openSections.gates}>
+          <SectionContent $isOpen={openSections.gates}>
             <ContentInner>
               <InputGroup>
                 <Label>Тип ворот</Label>
@@ -733,13 +733,13 @@ const WarehouseControls: React.FC<WarehouseControlsProps> = ({
 
         {/* Стены и кровля */}
         <Section>
-          <SectionHeader isOpen={openSections.walls} onClick={() => toggleSection('walls')}>
+          <SectionHeader $isOpen={openSections.walls} onClick={() => toggleSection('walls')}>
             <SectionTitle>
               <span>🧱</span> Стены и кровля
             </SectionTitle>
-            <SectionIcon isOpen={openSections.walls}>▼</SectionIcon>
+            <SectionIcon $isOpen={openSections.walls}>▼</SectionIcon>
           </SectionHeader>
-          <SectionContent isOpen={openSections.walls}>
+          <SectionContent $isOpen={openSections.walls}>
             <ContentInner>
               <InputGroup>
                 <Label>Материал стен</Label>
@@ -824,13 +824,13 @@ const WarehouseControls: React.FC<WarehouseControlsProps> = ({
 
         {/* Окна и двери */}
         <Section>
-          <SectionHeader isOpen={openSections.windows} onClick={() => toggleSection('windows')}>
+          <SectionHeader $isOpen={openSections.windows} onClick={() => toggleSection('windows')}>
             <SectionTitle>
               <span>🪟</span> Окна и двери
             </SectionTitle>
-            <SectionIcon isOpen={openSections.windows}>▼</SectionIcon>
+            <SectionIcon $isOpen={openSections.windows}>▼</SectionIcon>
           </SectionHeader>
-          <SectionContent isOpen={openSections.windows}>
+          <SectionContent $isOpen={openSections.windows}>
             <ContentInner>
               <div style={{ marginBottom: '15px' }}>
                 <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>
@@ -867,13 +867,13 @@ const WarehouseControls: React.FC<WarehouseControlsProps> = ({
 
         {/* Покрытие */}
         <Section>
-          <SectionHeader isOpen={openSections.paving} onClick={() => toggleSection('paving')}>
+          <SectionHeader $isOpen={openSections.paving} onClick={() => toggleSection('paving')}>
             <SectionTitle>
               <span>🛣️</span> Покрытие
             </SectionTitle>
-            <SectionIcon isOpen={openSections.paving}>▼</SectionIcon>
+            <SectionIcon $isOpen={openSections.paving}>▼</SectionIcon>
           </SectionHeader>
-          <SectionContent isOpen={openSections.paving}>
+          <SectionContent $isOpen={openSections.paving}>
             <ContentInner>
               <InputGroup>
                 <Label>Тип пола внутри здания</Label>

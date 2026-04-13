@@ -126,7 +126,7 @@ if (!gatesOpen && !doorsOpen) {
   const currentRotation = doorsOpen ? -openAngle : 0;
 
   elements.push(
-    <group key={`wicket-full-${keyPrefix}`} position={[0, hingeY, 0.03]} rotation={[0, rotY, 0]}>
+    <group key={`wicket-closed-${keyPrefix}`} position={[0, hingeY, 0.03]} rotation={[0, rotY, 0]}>
       <group position={[doorWidth / 2, 0, 0]} rotation={[0, currentRotation, 0]}>
         <group position={[-doorWidth, 0, 0]}>
            <mesh position={[doorWidth/2, doorHeight / 2 - doorFrameWidth / 2, 0]}>
@@ -175,7 +175,7 @@ if (!gatesOpen && !doorsOpen) {
       const currentRotation = doorsOpen ? -openAngle : 0;
 
       elements.push(
-        <group key={`wicket-full-${keyPrefix}`} position={[0, hingeY, 0.03]} rotation={[0, rotY, 0]}>
+        <group key={`wicket-open-${keyPrefix}`} position={[0, hingeY, 0.03]} rotation={[0, rotY, 0]}>
           <group position={[doorWidth / 2, 0, 0]} rotation={[0, currentRotation, 0]}>
             <group position={[-doorWidth, 0, 0]}>
                <mesh position={[doorWidth/2, doorHeight / 2 - doorFrameWidth / 2, 0]}>
