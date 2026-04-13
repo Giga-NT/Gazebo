@@ -325,15 +325,6 @@ const WarehouseControls: React.FC<WarehouseControlsProps> = ({
     setOpenSections(prev => ({ ...prev, [section]: !prev[section] }));
   };
 
-  const handleNumberChange = (name: keyof WarehouseParams, min: number, max: number) => (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
-    if (val === '') return;
-    const num = parseFloat(val);
-    if (!isNaN(num) && num >= min && num <= max) {
-      onChange(name, num);
-    }
-  };
-
   return (
     <Container>
       <Title>🏗️ Конструктор склада</Title>
@@ -359,41 +350,50 @@ const WarehouseControls: React.FC<WarehouseControlsProps> = ({
           </SectionHeader>
           <SectionContent isOpen={openSections.dimensions}>
             <ContentInner>
-              <InputGroup>
-                <Label>Длина (м)</Label>
-                <Input
-                  type="number"
-                  value={params.length}
-                  onChange={handleNumberChange('length', 5, 50)}
+              <div style={{ marginBottom: '15px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>
+                  Длина (м): {params.length.toFixed(1)}
+                </label>
+                <input
+                  type="range"
                   min="5"
                   max="50"
                   step="0.5"
+                  value={params.length}
+                  onChange={(e) => onChange('length', parseFloat(e.target.value))}
+                  style={{ width: '100%' }}
                 />
-              </InputGroup>
-              
-              <InputGroup>
-                <Label>Ширина (м)</Label>
-                <Input
-                  type="number"
-                  value={params.width}
-                  onChange={handleNumberChange('width', 3, 30)}
+              </div>
+
+              <div style={{ marginBottom: '15px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>
+                  Ширина (м): {params.width.toFixed(1)}
+                </label>
+                <input
+                  type="range"
                   min="3"
-                  max="30"
+                  max="24"
                   step="0.5"
+                  value={params.width}
+                  onChange={(e) => onChange('width', parseFloat(e.target.value))}
+                  style={{ width: '100%' }}
                 />
-              </InputGroup>
-              
-              <InputGroup>
-                <Label>Высота стен (м)</Label>
-                <Input
-                  type="number"
-                  value={params.wallHeight}
-                  onChange={handleNumberChange('wallHeight', 3, 12)}
+              </div>
+
+              <div style={{ marginBottom: '15px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>
+                  Высота стен (м): {params.wallHeight.toFixed(1)}
+                </label>
+                <input
+                  type="range"
                   min="3"
                   max="12"
                   step="0.5"
+                  value={params.wallHeight}
+                  onChange={(e) => onChange('wallHeight', parseFloat(e.target.value))}
+                  style={{ width: '100%' }}
                 />
-              </InputGroup>
+              </div>
 
               <InputGroup>
                 <Label>Толщина стеновых панелей (мм)</Label>
@@ -431,17 +431,20 @@ const WarehouseControls: React.FC<WarehouseControlsProps> = ({
               </InputGroup>
               
               {params.roofType !== 'flat' && (
-                <InputGroup>
-                  <Label>Высота кровли (м)</Label>
-                  <Input
-                    type="number"
-                    value={params.roofHeight}
-                    onChange={handleNumberChange('roofHeight', 0.5, 5)}
+                <div style={{ marginBottom: '15px' }}>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>
+                    Высота кровли (м): {params.roofHeight.toFixed(1)}
+                  </label>
+                  <input
+                    type="range"
                     min="0.5"
                     max="5"
                     step="0.1"
+                    value={params.roofHeight}
+                    onChange={(e) => onChange('roofHeight', parseFloat(e.target.value))}
+                    style={{ width: '100%' }}
                   />
-                </InputGroup>
+                </div>
               )}
             </ContentInner>
           </SectionContent>
@@ -469,17 +472,20 @@ const WarehouseControls: React.FC<WarehouseControlsProps> = ({
                 </Select>
               </InputGroup>
               
-              <InputGroup>
-                <Label>Шаг колонн (м)</Label>
-                <Input
-                  type="number"
-                  value={params.columnSpacing}
-                  onChange={handleNumberChange('columnSpacing', 1, 6)}
+              <div style={{ marginBottom: '15px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>
+                  Шаг колонн (м): {params.columnSpacing.toFixed(1)}
+                </label>
+                <input
+                  type="range"
                   min="1"
                   max="6"
                   step="0.5"
+                  value={params.columnSpacing}
+                  onChange={(e) => onChange('columnSpacing', parseFloat(e.target.value))}
+                  style={{ width: '100%' }}
                 />
-              </InputGroup>
+              </div>
               
               <InputGroup>
                 <Label>Сечение колонн</Label>
@@ -493,17 +499,20 @@ const WarehouseControls: React.FC<WarehouseControlsProps> = ({
                 </Select>
               </InputGroup>
               
-              <InputGroup>
-                <Label>Количество ферм</Label>
-                <Input
-                  type="number"
-                  value={params.trussCount}
-                  onChange={handleNumberChange('trussCount', 2, 20)}
+              <div style={{ marginBottom: '15px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>
+                  Количество ферм: {params.trussCount}
+                </label>
+                <input
+                  type="range"
                   min="2"
                   max="20"
                   step="1"
+                  value={params.trussCount}
+                  onChange={(e) => onChange('trussCount', parseInt(e.target.value))}
+                  style={{ width: '100%' }}
                 />
-              </InputGroup>
+              </div>
               
               <InputGroup>
                 <Label>Тип ферм</Label>
@@ -536,17 +545,20 @@ const WarehouseControls: React.FC<WarehouseControlsProps> = ({
                 </Select>
               </InputGroup>
               
-              <InputGroup>
-                <Label>Шаг прогонов (м)</Label>
-                <Input
-                  type="number"
-                  value={params.purlinSpacing}
-                  onChange={handleNumberChange('purlinSpacing', 0.5, 2)}
+              <div style={{ marginBottom: '15px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>
+                  Шаг прогонов (м): {params.purlinSpacing.toFixed(1)}
+                </label>
+                <input
+                  type="range"
                   min="0.5"
                   max="2"
                   step="0.1"
+                  value={params.purlinSpacing}
+                  onChange={(e) => onChange('purlinSpacing', parseFloat(e.target.value))}
+                  style={{ width: '100%' }}
                 />
-              </InputGroup>
+              </div>
 
               <InputGroup>
                 <Label>Тип связей</Label>
@@ -623,41 +635,50 @@ const WarehouseControls: React.FC<WarehouseControlsProps> = ({
               
               {params.gateType !== 'none' && (
                 <>
-                  <InputGroup>
-                    <Label>Ширина ворот (м)</Label>
-                    <Input
-                      type="number"
-                      value={params.gateWidth}
-                      onChange={handleNumberChange('gateWidth', 1, 6)}
+                  <div style={{ marginBottom: '15px' }}>
+                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>
+                      Ширина ворот (м): {params.gateWidth.toFixed(1)}
+                    </label>
+                    <input
+                      type="range"
                       min="1"
                       max="6"
                       step="0.1"
+                      value={params.gateWidth}
+                      onChange={(e) => onChange('gateWidth', parseFloat(e.target.value))}
+                      style={{ width: '100%' }}
                     />
-                  </InputGroup>
-                  
-                  <InputGroup>
-                    <Label>Высота ворот (м)</Label>
-                    <Input
-                      type="number"
-                      value={params.gateHeight}
-                      onChange={handleNumberChange('gateHeight', 2, 5)}
+                  </div>
+
+                  <div style={{ marginBottom: '15px' }}>
+                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>
+                      Высота ворот (м): {params.gateHeight.toFixed(1)}
+                    </label>
+                    <input
+                      type="range"
                       min="2"
                       max="5"
                       step="0.1"
+                      value={params.gateHeight}
+                      onChange={(e) => onChange('gateHeight', parseFloat(e.target.value))}
+                      style={{ width: '100%' }}
                     />
-                  </InputGroup>
-                  
-                  <InputGroup>
-                    <Label>Количество ворот</Label>
-                    <Input
-                      type="number"
-                      value={params.gateCount}
-                      onChange={handleNumberChange('gateCount', 1, 4)}
+                  </div>
+
+                  <div style={{ marginBottom: '15px' }}>
+                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>
+                      Количество ворот: {params.gateCount}
+                    </label>
+                    <input
+                      type="range"
                       min="1"
                       max="4"
                       step="1"
+                      value={params.gateCount}
+                      onChange={(e) => onChange('gateCount', parseInt(e.target.value))}
+                      style={{ width: '100%' }}
                     />
-                  </InputGroup>
+                  </div>
                   
                   <InputGroup>
                     <Label>Расположение</Label>
@@ -672,21 +693,24 @@ const WarehouseControls: React.FC<WarehouseControlsProps> = ({
                     </Select>
                   </InputGroup>
 
-                  <InputGroup>
-                    <Label>Смещение от центра (м)</Label>
-                    <Input
-                      type="number"
-                      value={params.gateOffset || 0}
-                      onChange={(e) => onChange('gateOffset', parseFloat(e.target.value) || 0)}
+                  <div style={{ marginBottom: '15px' }}>
+                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>
+                      Смещение от центра (м): {(params.gateOffset || 0).toFixed(1)}
+                    </label>
+                    <input
+                      type="range"
                       min={-params.width / 2 + params.gateWidth / 2 + 1}
                       max={params.width / 2 - params.gateWidth / 2 - 1}
                       step="0.5"
+                      value={params.gateOffset || 0}
+                      onChange={(e) => onChange('gateOffset', parseFloat(e.target.value) || 0)}
+                      style={{ width: '100%' }}
                     />
                     <HelpText>
-                      Отрицательное значение — смещение влево/назад, 
+                      Отрицательное значение — смещение влево/назад,
                       положительное — вправо/вперёд.
                     </HelpText>
-                  </InputGroup>
+                  </div>
 
                   {params.gatePosition === 'side' && (
                     <InputGroup>
@@ -808,29 +832,35 @@ const WarehouseControls: React.FC<WarehouseControlsProps> = ({
           </SectionHeader>
           <SectionContent isOpen={openSections.windows}>
             <ContentInner>
-              <InputGroup>
-                <Label>Количество окон</Label>
-                <Input
-                  type="number"
-                  value={params.windowCount}
-                  onChange={handleNumberChange('windowCount', 0, 20)}
+              <div style={{ marginBottom: '15px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>
+                  Количество окон: {params.windowCount}
+                </label>
+                <input
+                  type="range"
                   min="0"
                   max="20"
                   step="1"
+                  value={params.windowCount}
+                  onChange={(e) => onChange('windowCount', parseInt(e.target.value))}
+                  style={{ width: '100%' }}
                 />
-              </InputGroup>
-              
-              <InputGroup>
-                <Label>Количество дверей</Label>
-                <Input
-                  type="number"
-                  value={params.doorCount}
-                  onChange={handleNumberChange('doorCount', 0, 10)}
+              </div>
+
+              <div style={{ marginBottom: '15px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>
+                  Количество дверей: {params.doorCount}
+                </label>
+                <input
+                  type="range"
                   min="0"
                   max="10"
                   step="1"
+                  value={params.doorCount}
+                  onChange={(e) => onChange('doorCount', parseInt(e.target.value))}
+                  style={{ width: '100%' }}
                 />
-              </InputGroup>
+              </div>
             </ContentInner>
           </SectionContent>
         </Section>
@@ -857,17 +887,20 @@ const WarehouseControls: React.FC<WarehouseControlsProps> = ({
                 </Select>
               </InputGroup>
               
-              <InputGroup>
-                <Label>Ширина отмостки/асфальта (м)</Label>
-                <Input
-                  type="number"
-                  value={params.asphaltWidth || 10}
-                  onChange={(e) => onChange('asphaltWidth', parseFloat(e.target.value))}
+              <div style={{ marginBottom: '15px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>
+                  Ширина отмостки/асфальта (м): {(params.asphaltWidth || 10).toFixed(1)}
+                </label>
+                <input
+                  type="range"
                   min="1"
                   max="30"
                   step="0.5"
+                  value={params.asphaltWidth || 10}
+                  onChange={(e) => onChange('asphaltWidth', parseFloat(e.target.value))}
+                  style={{ width: '100%' }}
                 />
-              </InputGroup>
+              </div>
             </ContentInner>
           </SectionContent>
         </Section>

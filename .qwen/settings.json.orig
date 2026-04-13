@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(C:\\MaxGG\\DRUG77\\dpd_route_builder/**)"
+    ]
+  }
+}
