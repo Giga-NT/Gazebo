@@ -30,6 +30,10 @@ const AppearanceControls: React.FC<AppearanceControlsProps> = ({ params, onChang
     setActiveColorPicker(activeColorPicker === pickerName ? null : pickerName);
   };
 
+  const closeColorPicker = () => {
+    setActiveColorPicker(null);
+  };
+
   return (
     <>
       <InputGroup>
@@ -50,16 +54,40 @@ const AppearanceControls: React.FC<AppearanceControlsProps> = ({ params, onChang
           <ColorPickerButton
             color={params.color}
             onClick={() => toggleColorPicker('main')}
+            title={params.color}
           />
+          <span style={{ marginLeft: '10px', fontSize: '14px', color: '#666', fontFamily: 'monospace' }}>
+            {params.color}
+          </span>
           {activeColorPicker === 'main' && (
             <ColorPickerPopup>
-              <HexColorPicker
-                color={params.color}
-                onChange={(color) => {
-                  onChange('color', color);
-                  setActiveColorPicker(null);
-                }}
-              />
+              <div style={{ position: 'relative' }}>
+                <button
+                  onClick={closeColorPicker}
+                  style={{
+                    position: 'absolute',
+                    top: '8px',
+                    right: '8px',
+                    background: '#ff4444',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '50%',
+                    width: '24px',
+                    height: '24px',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: 'bold',
+                    lineHeight: '1',
+                    zIndex: 10
+                  }}
+                >
+                  ×
+                </button>
+                <HexColorPicker
+                  color={params.color}
+                  onChange={(color) => onChange('color', color)}
+                />
+              </div>
             </ColorPickerPopup>
           )}
         </ColorPickerWrapper>
@@ -71,16 +99,40 @@ const AppearanceControls: React.FC<AppearanceControlsProps> = ({ params, onChang
           <ColorPickerButton
             color={params.roofColor}
             onClick={() => toggleColorPicker('roof')}
+            title={params.roofColor}
           />
+          <span style={{ marginLeft: '10px', fontSize: '14px', color: '#666', fontFamily: 'monospace' }}>
+            {params.roofColor}
+          </span>
           {activeColorPicker === 'roof' && (
             <ColorPickerPopup>
-              <HexColorPicker
-                color={params.roofColor}
-                onChange={(color) => {
-                  onChange('roofColor', color);
-                  setActiveColorPicker(null);
-                }}
-              />
+              <div style={{ position: 'relative' }}>
+                <button
+                  onClick={closeColorPicker}
+                  style={{
+                    position: 'absolute',
+                    top: '8px',
+                    right: '8px',
+                    background: '#ff4444',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '50%',
+                    width: '24px',
+                    height: '24px',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: 'bold',
+                    lineHeight: '1',
+                    zIndex: 10
+                  }}
+                >
+                  ×
+                </button>
+                <HexColorPicker
+                  color={params.roofColor}
+                  onChange={(color) => onChange('roofColor', color)}
+                />
+              </div>
             </ColorPickerPopup>
           )}
         </ColorPickerWrapper>
@@ -92,16 +144,40 @@ const AppearanceControls: React.FC<AppearanceControlsProps> = ({ params, onChang
           <ColorPickerButton
             color={params.floorColor}
             onClick={() => toggleColorPicker('floor')}
+            title={params.floorColor}
           />
+          <span style={{ marginLeft: '10px', fontSize: '14px', color: '#666', fontFamily: 'monospace' }}>
+            {params.floorColor}
+          </span>
           {activeColorPicker === 'floor' && (
             <ColorPickerPopup>
-              <HexColorPicker
-                color={params.floorColor}
-                onChange={(color) => {
-                  onChange('floorColor', color);
-                  setActiveColorPicker(null);
-                }}
-              />
+              <div style={{ position: 'relative' }}>
+                <button
+                  onClick={closeColorPicker}
+                  style={{
+                    position: 'absolute',
+                    top: '8px',
+                    right: '8px',
+                    background: '#ff4444',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '50%',
+                    width: '24px',
+                    height: '24px',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: 'bold',
+                    lineHeight: '1',
+                    zIndex: 10
+                  }}
+                >
+                  ×
+                </button>
+                <HexColorPicker
+                  color={params.floorColor}
+                  onChange={(color) => onChange('floorColor', color)}
+                />
+              </div>
             </ColorPickerPopup>
           )}
         </ColorPickerWrapper>

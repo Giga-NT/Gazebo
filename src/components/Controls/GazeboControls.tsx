@@ -44,6 +44,63 @@ const GazeboControls: React.FC<GazeboControlsProps> = ({ params, onChange }) => 
     setActiveColorPicker(activeColorPicker === pickerName ? null : pickerName);
   };
 
+  const closeColorPicker = () => {
+    setActiveColorPicker(null);
+  };
+
+  const renderColorPicker = (label: string, color: string, pickerName: string, onChangeColor: (color: string) => void) => (
+    <InputGroup>
+      <Label>{label}</Label>
+      <ColorPickerWrapper>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <ColorPickerButton
+            color={color}
+            onClick={() => toggleColorPicker(pickerName)}
+            title={color}
+            style={{ width: '50px', height: '36px', cursor: 'pointer' }}
+          />
+          <span style={{ fontSize: '14px', color: '#666', fontFamily: 'monospace' }}>
+            {color}
+          </span>
+        </div>
+        {activeColorPicker === pickerName && (
+          <ColorPickerPopup>
+            <div style={{ position: 'relative' }}>
+              <button
+                onClick={closeColorPicker}
+                style={{
+                  position: 'absolute',
+                  top: '8px',
+                  right: '8px',
+                  background: '#ff4444',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '50%',
+                  width: '28px',
+                  height: '28px',
+                  cursor: 'pointer',
+                  fontSize: '18px',
+                  fontWeight: 'bold',
+                  lineHeight: '1',
+                  zIndex: 10,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                ×
+              </button>
+              <HexColorPicker
+                color={color}
+                onChange={onChangeColor}
+              />
+            </div>
+          </ColorPickerPopup>
+        )}
+      </ColorPickerWrapper>
+    </InputGroup>
+  );
+
   return (
     <Container>
       <Title>Конструктор беседки</Title>
@@ -187,26 +244,7 @@ const GazeboControls: React.FC<GazeboControlsProps> = ({ params, onChange }) => 
             <option value="none">Без пола</option>
           </Select>
         </InputGroup>
-        <InputGroup>
-          <Label>Цвет пола</Label>
-          <ColorPickerWrapper>
-            <ColorPickerButton
-              color={params.floorColor}
-              onClick={() => toggleColorPicker('floor')}
-            />
-            {activeColorPicker === 'floor' && (
-              <ColorPickerPopup>
-                <HexColorPicker
-                  color={params.floorColor}
-                  onChange={(color) => {
-                    onChange('floorColor', color);
-                    setActiveColorPicker(null);
-                  }}
-                />
-              </ColorPickerPopup>
-            )}
-          </ColorPickerWrapper>
-        </InputGroup>
+        {renderColorPicker('Цвет пола', params.floorColor, 'floor', (color) => onChange('floorColor', color))}
       </ControlSection>
 
       {/* Мебель */}
@@ -312,46 +350,8 @@ const GazeboControls: React.FC<GazeboControlsProps> = ({ params, onChange }) => 
             </InputGroup>
 
             <SectionTitle style={{ fontSize: '1rem', marginTop: '16px' }}>Цвета стола</SectionTitle>
-            <InputGroup>
-              <Label>Цвет столешницы</Label>
-              <ColorPickerWrapper>
-                <ColorPickerButton
-                  color={params.tableTopColor || '#D2B48C'}
-                  onClick={() => toggleColorPicker('tableTop')}
-                />
-                {activeColorPicker === 'tableTop' && (
-                  <ColorPickerPopup>
-                    <HexColorPicker
-                      color={params.tableTopColor || '#D2B48C'}
-                      onChange={(color) => {
-                        onChange('tableTopColor', color);
-                        setActiveColorPicker(null);
-                      }}
-                    />
-                  </ColorPickerPopup>
-                )}
-              </ColorPickerWrapper>
-            </InputGroup>
-            <InputGroup>
-              <Label>Цвет ножек стола</Label>
-              <ColorPickerWrapper>
-                <ColorPickerButton
-                  color={params.tableLegsColor || '#8B4513'}
-                  onClick={() => toggleColorPicker('tableLegs')}
-                />
-                {activeColorPicker === 'tableLegs' && (
-                  <ColorPickerPopup>
-                    <HexColorPicker
-                      color={params.tableLegsColor || '#8B4513'}
-                      onChange={(color) => {
-                        onChange('tableLegsColor', color);
-                        setActiveColorPicker(null);
-                      }}
-                    />
-                  </ColorPickerPopup>
-                )}
-              </ColorPickerWrapper>
-            </InputGroup>
+            {renderColorPicker('Цвет столешницы', params.tableTopColor || '#D2B48C', 'tableTop', (color) => onChange('tableTopColor', color))}
+            {renderColorPicker('Цвет ножек стола', params.tableLegsColor || '#8B4513', 'tableLegs', (color) => onChange('tableLegsColor', color))}
 
             <SectionTitle style={{ fontSize: '0.95rem', color: '#555', marginTop: '8px' }}>Ручные размеры (заполните для переопределения)</SectionTitle>
             <div style={{ marginBottom: '16px' }}>
