@@ -22,20 +22,50 @@ const Title = styled.h2`
   text-align: center;
 `;
 
-const ControlSection = styled.div`
-  margin-bottom: 28px;
-  padding: 16px 20px;
-  background: #ffffff;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+// Аккордеон секции
+const Section = styled.div`
+  border-bottom: 1px solid #e2e8f0;
+`;
+
+const SectionHeader = styled.div<{ $isOpen: boolean }>`
+  padding: 18px 24px;
+  background: ${props => props.$isOpen ? '#f8fafc' : 'white'};
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   transition: background 0.3s ease;
+
+  &:hover {
+    background: #f1f5f9;
+  }
 `;
 
 const SectionTitle = styled.h3`
-  margin: 0 0 16px;
+  margin: 0;
   color: #2c3e50;
   font-size: 1.2rem;
   font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+`;
+
+const SectionIcon = styled.span<{ $isOpen: boolean }>`
+  font-size: 20px;
+  transform: rotate(${props => props.$isOpen ? '180deg' : '0deg'});
+  transition: transform 0.3s ease;
+`;
+
+const SectionContent = styled.div<{ $isOpen: boolean }>`
+  max-height: ${props => props.$isOpen ? '2000px' : '0'};
+  overflow: hidden;
+  transition: max-height 0.5s ease;
+  background: white;
+`;
+
+const ContentInner = styled.div`
+  padding: 20px 24px 24px;
 `;
 
 const InputGroup = styled.div`
@@ -48,21 +78,6 @@ const Label = styled.label`
   font-size: 0.9rem;
   color: #34495e;
   font-weight: 500;
-`;
-
-const Input = styled.input`
-  width: 100%;
-  padding: 10px 14px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 0.95rem;
-  transition: border 0.3s ease;
-
-  &:focus {
-    border-color: #3498db;
-    outline: none;
-    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
-  }
 `;
 
 const Select = styled.select`
@@ -113,34 +128,11 @@ const ColorPickerPopup = styled.div`
   padding: 12px;
 `;
 
-const Button = styled.button<{ isActive: boolean }>`
-  padding: 10px 15px;
-  background: ${props => props.isActive ? '#4CAF50' : '#f39c12'};
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  transition: all 0.2s ease;
-
-  &:hover {
-    opacity: 0.9;
-  }
-`;
-
 const CheckboxContainer = styled.div`
   display: flex;
   flex-direction: column;
   gap: 10px;
   margin-top: 10px;
-`;
-
-const CheckboxGroup = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 8px;
 `;
 
 const CheckboxItem = styled.div`
@@ -155,19 +147,6 @@ const StyledCheckbox = styled.input.attrs({ type: 'checkbox' })`
   cursor: pointer;
 `;
 
-const RangeContainer = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-`;
-
-const RangeValue = styled.span`
-  min-width: 40px;
-  text-align: right;
-  font-size: 0.9rem;
-  color: #555;
-`;
-
 interface GreenhouseControlsProps {
   params: GreenhouseParams;
   onChange: (name: keyof GreenhouseParams, value: any) => void;
@@ -175,13 +154,23 @@ interface GreenhouseControlsProps {
   setVentsOpen: (open: boolean) => void;
 }
 
-const GreenhouseControls: React.FC<GreenhouseControlsProps> = ({ 
-  params, 
+const GreenhouseControls: React.FC<GreenhouseControlsProps> = ({
+  params,
   onChange,
   ventsOpen,
   setVentsOpen
 }) => {
   const [activeColorPicker, setActiveColorPicker] = useState<string | null>(null);
+  const [openSections, setOpenSections] = useState({
+    basic: true,
+    materials: false,
+    roof: false,
+    doors: false
+  });
+
+  const toggleSection = (section: keyof typeof openSections) => {
+    setOpenSections(prev => ({ ...prev, [section]: !prev[section] }));
+  };
 
   const toggleColorPicker = (pickerName: string) => {
     setActiveColorPicker(activeColorPicker === pickerName ? null : pickerName);
@@ -199,7 +188,7 @@ const GreenhouseControls: React.FC<GreenhouseControlsProps> = ({
     const newSides = currentSides.includes(side)
       ? currentSides.filter(s => s !== side)
       : [...currentSides, side];
-    
+
     handleVentChange('side', newSides.join(','));
   };
 
@@ -216,181 +205,229 @@ const GreenhouseControls: React.FC<GreenhouseControlsProps> = ({
 
   return (
     <Container>
-      <Title>Конструктор теплицы</Title>
+      <Title>🌱 Конструктор теплицы</Title>
 
       {/* Основные параметры */}
-      <ControlSection>
-        <SectionTitle>Основные параметры</SectionTitle>
-        <InputGroup>
-          <Label>Длина (м)</Label>
-          <Input
-            type="number"
-            value={params.length}
-            onChange={(e) => onChange('length', parseFloat(e.target.value))}
-            min="2"
-            max="24"
-            step="0.1"
-          />
-        </InputGroup>
-        <InputGroup>
-          <Label>Ширина (м)</Label>
-          <Input
-            type="number"
-            value={params.width}
-            onChange={(e) => onChange('width', parseFloat(e.target.value))}
-            min="2"
-            max="12"
-            step="0.1"
-          />
-        </InputGroup>
-        <InputGroup>
-          <Label>Высота стен (м)</Label>
-          <Input
-            type="number"
-            value={params.wallHeight}
-            onChange={(e) => onChange('wallHeight', parseFloat(e.target.value))}
-            min="2"
-            max="4"
-            step="0.1"
-          />
-        </InputGroup>
-        <InputGroup>
-          <Label>Тип теплицы</Label>
-          <Select
-            value={params.type}
-            onChange={(e) => onChange('type', e.target.value)}
-          >
-            <option value="arched">Арочная</option>
-            <option value="gable">Двускатная</option>
-          </Select>
-        </InputGroup>
-      </ControlSection>
+      <Section>
+        <SectionHeader $isOpen={openSections.basic} onClick={() => toggleSection('basic')}>
+          <SectionTitle>
+            <span>📐</span> Основные параметры
+          </SectionTitle>
+          <SectionIcon $isOpen={openSections.basic}>▼</SectionIcon>
+        </SectionHeader>
+        <SectionContent $isOpen={openSections.basic}>
+          <ContentInner>
+            <div style={{ marginBottom: '16px' }}>
+              <Label>Длина (м): {params.length.toFixed(1)}</Label>
+              <input
+                type="range"
+                min="2"
+                max="24"
+                step="0.1"
+                value={params.length}
+                onChange={(e) => onChange('length', parseFloat(e.target.value))}
+                style={{ width: '100%' }}
+              />
+            </div>
+
+            <div style={{ marginBottom: '16px' }}>
+              <Label>Ширина (м): {params.width.toFixed(1)}</Label>
+              <input
+                type="range"
+                min="2"
+                max="12"
+                step="0.1"
+                value={params.width}
+                onChange={(e) => onChange('width', parseFloat(e.target.value))}
+                style={{ width: '100%' }}
+              />
+            </div>
+
+            <div style={{ marginBottom: '16px' }}>
+              <Label>Высота стен (м): {params.wallHeight.toFixed(1)}</Label>
+              <input
+                type="range"
+                min="2"
+                max="4"
+                step="0.1"
+                value={params.wallHeight}
+                onChange={(e) => onChange('wallHeight', parseFloat(e.target.value))}
+                style={{ width: '100%' }}
+              />
+            </div>
+
+            <InputGroup>
+              <Label>Тип теплицы</Label>
+              <Select
+                value={params.type}
+                onChange={(e) => onChange('type', e.target.value)}
+              >
+                <option value="arched">Арочная</option>
+                <option value="gable">Двускатная</option>
+              </Select>
+            </InputGroup>
+          </ContentInner>
+        </SectionContent>
+      </Section>
 
       {/* Материалы */}
-      <ControlSection>
-        <SectionTitle>Материалы</SectionTitle>
-        <InputGroup>
-          <Label>Каркас</Label>
-          <Select
-            value={params.frameMaterial}
-            onChange={(e) => onChange('frameMaterial', e.target.value)}
-          >
-            <option value="metal">Металл</option>
-            <option value="pvc">ПВХ</option>
-            <option value="wood">Дерево</option>
-          </Select>
-        </InputGroup>
-        <InputGroup>
-          <Label>Цвет каркаса</Label>
-          <ColorPickerWrapper>
-            <ColorPickerButton
-              color={params.frameColor}
-              onClick={() => toggleColorPicker('frame')}
-            />
-            {activeColorPicker === 'frame' && (
-              <ColorPickerPopup>
-                <HexColorPicker
+      <Section>
+        <SectionHeader $isOpen={openSections.materials} onClick={() => toggleSection('materials')}>
+          <SectionTitle>
+            <span>🔧</span> Материалы
+          </SectionTitle>
+          <SectionIcon $isOpen={openSections.materials}>▼</SectionIcon>
+        </SectionHeader>
+        <SectionContent $isOpen={openSections.materials}>
+          <ContentInner>
+            <InputGroup>
+              <Label>Каркас</Label>
+              <Select
+                value={params.frameMaterial}
+                onChange={(e) => onChange('frameMaterial', e.target.value)}
+              >
+                <option value="metal">Металл</option>
+                <option value="pvc">ПВХ</option>
+                <option value="wood">Дерево</option>
+              </Select>
+            </InputGroup>
+
+            <InputGroup>
+              <Label>Цвет каркаса</Label>
+              <ColorPickerWrapper>
+                <ColorPickerButton
                   color={params.frameColor}
-                  onChange={(color) => {
-                    onChange('frameColor', color);
-                    setActiveColorPicker(null);
-                  }}
+                  onClick={() => toggleColorPicker('frame')}
                 />
-              </ColorPickerPopup>
-            )}
-          </ColorPickerWrapper>
-        </InputGroup>
-      </ControlSection>
+                {activeColorPicker === 'frame' && (
+                  <ColorPickerPopup>
+                    <HexColorPicker
+                      color={params.frameColor}
+                      onChange={(color) => {
+                        onChange('frameColor', color);
+                        setActiveColorPicker(null);
+                      }}
+                    />
+                  </ColorPickerPopup>
+                )}
+              </ColorPickerWrapper>
+            </InputGroup>
+          </ContentInner>
+        </SectionContent>
+      </Section>
 
       {/* Крыша */}
-      <ControlSection>
-        <SectionTitle>Крыша</SectionTitle>
-        {params.type === 'arched' && (
-          <InputGroup>
-            <Label>Высота арки (м)</Label>
-            <Input
-              type="number"
-              value={params.archHeight}
-              onChange={(e) => onChange('archHeight', parseFloat(e.target.value))}
-              min="0.5"
-              max="3"
-              step="0.1"
-            />
-          </InputGroup>
-        )}
-        {params.type === 'gable' && (
-          <InputGroup>
-            <Label>Угол наклона (°)</Label>
-            <Input
-              type="number"
-              value={params.roofAngle}
-              onChange={(e) => onChange('roofAngle', parseFloat(e.target.value))}
-              min="5"
-              max="20"
-              step="1"
-            />
-          </InputGroup>
-        )}
-        <InputGroup>
-          <Label>Покрытие</Label>
-          <Select
-            value={params.coverMaterial}
-            onChange={(e) => onChange('coverMaterial', e.target.value)}
-          >
-            <option value="polycarbonate">Поликарбонат</option>
-            <option value="glass">Стекло</option>
-            <option value="film">Пленка</option>
-          </Select>
-        </InputGroup>
-        <InputGroup>
-          <Label>Цвет покрытия</Label>
-          <ColorPickerWrapper>
-            <ColorPickerButton
-              color={params.coverColor}
-              onClick={() => toggleColorPicker('cover')}
-            />
-            {activeColorPicker === 'cover' && (
-              <ColorPickerPopup>
-                <HexColorPicker
-                  color={params.coverColor}
-                  onChange={(color) => {
-                    onChange('coverColor', color);
-                    setActiveColorPicker(null);
-                  }}
+      <Section>
+        <SectionHeader $isOpen={openSections.roof} onClick={() => toggleSection('roof')}>
+          <SectionTitle>
+            <span>🏠</span> Крыша
+          </SectionTitle>
+          <SectionIcon $isOpen={openSections.roof}>▼</SectionIcon>
+        </SectionHeader>
+        <SectionContent $isOpen={openSections.roof}>
+          <ContentInner>
+            {params.type === 'arched' && (
+              <div style={{ marginBottom: '16px' }}>
+                <Label>Высота арки (м): {params.archHeight.toFixed(1)}</Label>
+                <input
+                  type="range"
+                  min="0.5"
+                  max="3"
+                  step="0.1"
+                  value={params.archHeight}
+                  onChange={(e) => onChange('archHeight', parseFloat(e.target.value))}
+                  style={{ width: '100%' }}
                 />
-              </ColorPickerPopup>
+              </div>
             )}
-          </ColorPickerWrapper>
-        </InputGroup>
-      </ControlSection>
 
+            {params.type === 'gable' && (
+              <div style={{ marginBottom: '16px' }}>
+                <Label>Угол наклона (°): {params.roofAngle}</Label>
+                <input
+                  type="range"
+                  min="5"
+                  max="20"
+                  step="1"
+                  value={params.roofAngle}
+                  onChange={(e) => onChange('roofAngle', parseInt(e.target.value))}
+                  style={{ width: '100%' }}
+                />
+              </div>
+            )}
+
+            <InputGroup>
+              <Label>Покрытие</Label>
+              <Select
+                value={params.coverMaterial}
+                onChange={(e) => onChange('coverMaterial', e.target.value)}
+              >
+                <option value="polycarbonate">Поликарбонат</option>
+                <option value="glass">Стекло</option>
+                <option value="film">Пленка</option>
+              </Select>
+            </InputGroup>
+
+            <InputGroup>
+              <Label>Цвет покрытия</Label>
+              <ColorPickerWrapper>
+                <ColorPickerButton
+                  color={params.coverColor}
+                  onClick={() => toggleColorPicker('cover')}
+                />
+                {activeColorPicker === 'cover' && (
+                  <ColorPickerPopup>
+                    <HexColorPicker
+                      color={params.coverColor}
+                      onChange={(color) => {
+                        onChange('coverColor', color);
+                        setActiveColorPicker(null);
+                      }}
+                    />
+                  </ColorPickerPopup>
+                )}
+              </ColorPickerWrapper>
+            </InputGroup>
+          </ContentInner>
+        </SectionContent>
+      </Section>
 
       {/* Двери */}
-      <ControlSection>
-        <SectionTitle>Двери</SectionTitle>
-        <CheckboxContainer>
-          <CheckboxItem onClick={() => onChange('hasDoors', !params.hasDoors)}>
-            <StyledCheckbox
-              checked={params.hasDoors || false}
-              onChange={(e) => onChange('hasDoors', e.target.checked)}
-            />
-            <Label>Двери</Label>
-          </CheckboxItem>
-        </CheckboxContainer>
-        {params.hasDoors && (
-          <InputGroup>
-            <Label>Сторона дверей</Label>
-            <Select
-              value={params.doorSide}
-              onChange={(e) => onChange('doorSide', e.target.value)}
-            >
-              <option value="front">Только спереди</option>
-              <option value="back">Только сзади</option>
-              <option value="both">С обеих сторон</option>
-            </Select>
-          </InputGroup>
-        )}
-      </ControlSection>
+      <Section>
+        <SectionHeader $isOpen={openSections.doors} onClick={() => toggleSection('doors')}>
+          <SectionTitle>
+            <span>🚪</span> Двери
+          </SectionTitle>
+          <SectionIcon $isOpen={openSections.doors}>▼</SectionIcon>
+        </SectionHeader>
+        <SectionContent $isOpen={openSections.doors}>
+          <ContentInner>
+            <CheckboxContainer>
+              <CheckboxItem onClick={() => onChange('hasDoors', !params.hasDoors)}>
+                <StyledCheckbox
+                  checked={params.hasDoors || false}
+                  onChange={(e) => onChange('hasDoors', e.target.checked)}
+                />
+                <Label>Двери</Label>
+              </CheckboxItem>
+            </CheckboxContainer>
+
+            {params.hasDoors && (
+              <InputGroup>
+                <Label>Сторона дверей</Label>
+                <Select
+                  value={params.doorSide}
+                  onChange={(e) => onChange('doorSide', e.target.value)}
+                >
+                  <option value="front">Только спереди</option>
+                  <option value="back">Только сзади</option>
+                  <option value="both">С обеих сторон</option>
+                </Select>
+              </InputGroup>
+            )}
+          </ContentInner>
+        </SectionContent>
+      </Section>
     </Container>
   );
 };
