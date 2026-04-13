@@ -127,3 +127,60 @@ export const StyledCheckbox = styled.input.attrs({ type: 'checkbox' })`
   height: 16px;
   cursor: pointer;
 `;
+
+export const RangeInput = styled.div`
+  margin-bottom: 16px;
+`;
+
+export const RangeSlider = styled.input.attrs({ type: 'range' })`
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(to right, #3498db 0%, #2980b9 100%);
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 3px solid #3498db;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      transform: scale(1.1);
+      box-shadow: 0 4px 8px rgba(52, 152, 219, 0.4);
+    }
+  }
+
+  &::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 3px solid #3498db;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      transform: scale(1.1);
+      box-shadow: 0 4px 8px rgba(52, 152, 219, 0.4);
+    }
+  }
+
+  &:active::-webkit-slider-thumb {
+    transform: scale(1.2);
+  }
+
+  &:active::-moz-range-thumb {
+    transform: scale(1.2);
+  }
+`;

@@ -1,6 +1,6 @@
 import React from 'react';
 import { GazeboParams } from '../../types/gazeboTypes';
-import { InputGroup, Label, Select, Input } from './GazeboStyles';
+import { InputGroup, Label, Select } from './GazeboStyles';
 
 interface GazeboConstructionControlsProps {
   params: GazeboParams;
@@ -21,40 +21,42 @@ const GazeboConstructionControls: React.FC<GazeboConstructionControlsProps> = ({
         </Select>
       </InputGroup>
 
-	<InputGroup>
-	  <Label>Направление изгиба стоек</Label>
-	  <Select
-		value={params.pillarBendDirection}
-		onChange={(e: React.ChangeEvent<HTMLSelectElement>) => onChange('pillarBendDirection', e.target.value)}
-	  >
-		<option value="outward">Наружу</option>
-		<option value="inward">Внутрь</option>
-	  </Select>
-	</InputGroup>
-
       <InputGroup>
-        <Label>Шаг стоек (м)</Label>
-        <Input
-          type="number"
-          value={params.pillarSpacing}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange('pillarSpacing', parseFloat(e.target.value))}
+        <Label>Направление изгиба стоек</Label>
+        <Select
+          value={params.pillarBendDirection}
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => onChange('pillarBendDirection', e.target.value)}
+        >
+          <option value="outward">Наружу</option>
+          <option value="inward">Внутрь</option>
+        </Select>
+      </InputGroup>
+
+      <div style={{ marginBottom: '16px' }}>
+        <Label>Шаг стоек (м): {params.pillarSpacing.toFixed(1)}</Label>
+        <input
+          type="range"
           min="0.5"
           max="3"
           step="0.1"
+          value={params.pillarSpacing}
+          onChange={(e) => onChange('pillarSpacing', parseFloat(e.target.value))}
+          style={{ width: '100%' }}
         />
-      </InputGroup>
+      </div>
 
-      <InputGroup>
-        <Label>Количество ферм (стропил)</Label>
-        <Input
-          type="number"
-          value={params.trussCount}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange('trussCount', parseInt(e.target.value))}
+      <div style={{ marginBottom: '16px' }}>
+        <Label>Количество ферм (стропил): {params.trussCount}</Label>
+        <input
+          type="range"
           min="2"
           max="10"
           step="1"
+          value={params.trussCount}
+          onChange={(e) => onChange('trussCount', parseInt(e.target.value))}
+          style={{ width: '100%' }}
         />
-      </InputGroup>
+      </div>
 
       <InputGroup>
         <Label>Тип фермы</Label>
@@ -68,29 +70,31 @@ const GazeboConstructionControls: React.FC<GazeboConstructionControlsProps> = ({
         </Select>
       </InputGroup>
 
-      <InputGroup>
-        <Label>Шаг обрешётки (м)</Label>
-        <Input
-          type="number"
-          value={params.lathingStep}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange('lathingStep', parseFloat(e.target.value))}
+      <div style={{ marginBottom: '16px' }}>
+        <Label>Шаг обрешётки (м): {params.lathingStep.toFixed(1)}</Label>
+        <input
+          type="range"
           min="0.3"
           max="1.0"
           step="0.1"
+          value={params.lathingStep}
+          onChange={(e) => onChange('lathingStep', parseFloat(e.target.value))}
+          style={{ width: '100%' }}
         />
-      </InputGroup>
+      </div>
 
-      <InputGroup>
-        <Label>Высота перил (м)</Label>
-        <Input
-          type="number"
-          value={params.railingHeight}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange('railingHeight', parseFloat(e.target.value))}
+      <div style={{ marginBottom: '16px' }}>
+        <Label>Высота перил (м): {params.railingHeight.toFixed(1)}</Label>
+        <input
+          type="range"
           min="0"
           max="1.2"
           step="0.1"
+          value={params.railingHeight}
+          onChange={(e) => onChange('railingHeight', parseFloat(e.target.value))}
+          style={{ width: '100%' }}
         />
-      </InputGroup>
+      </div>
     </>
   );
 };

@@ -15,7 +15,9 @@ import {
   ColorPickerPopup,
   CheckboxContainer,
   CheckboxItem,
-  StyledCheckbox
+  StyledCheckbox,
+  RangeInput,
+  RangeSlider
 } from './GazeboStyles';
 
 import TubeControls from './TubeControls2';
@@ -34,26 +36,6 @@ const GazeboControls: React.FC<GazeboControlsProps> = ({ params, onChange }) => 
     setActiveColorPicker(activeColorPicker === pickerName ? null : pickerName);
   };
 
-  // Безопасный обработчик для обязательных числовых полей (не допускает NaN)
-  const handleRequiredNumber = (name: keyof GazeboParams, min: number, max: number) => (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    if (value === '') return; // игнорируем пустую строку
-    const num = parseFloat(value);
-    if (!isNaN(num) && num >= min && num <= max) {
-      onChange(name, num);
-    }
-  };
-
-  // Обработчик для целочисленных полей (pillarCount, benchCount, tableCount)
-  const handleRequiredInt = (name: keyof GazeboParams, min: number, max: number) => (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    if (value === '') return;
-    const num = parseInt(value, 10);
-    if (!isNaN(num) && num >= min && num <= max) {
-      onChange(name, num);
-    }
-  };
-
   return (
     <Container>
       <Title>Конструктор беседки</Title>
@@ -61,39 +43,46 @@ const GazeboControls: React.FC<GazeboControlsProps> = ({ params, onChange }) => 
       {/* Основные параметры */}
       <ControlSection>
         <SectionTitle>Основные параметры</SectionTitle>
-        <InputGroup>
-          <Label>Длина (м)</Label>
-          <Input
-            type="number"
+        
+        <div style={{ marginBottom: '16px' }}>
+          <Label>Длина (м): {params.length.toFixed(1)}</Label>
+          <input
+            type="range"
+            min="2"
+            max="10"
+            step="0.1"
             value={params.length}
-            onChange={handleRequiredNumber('length', 2, 10)}
+            onChange={(e) => onChange('length', parseFloat(e.target.value))}
+            style={{ width: '100%' }}
+          />
+        </div>
+
+        <div style={{ marginBottom: '16px' }}>
+          <Label>Ширина (м): {params.width.toFixed(1)}</Label>
+          <input
+            type="range"
             min="2"
             max="10"
             step="0.1"
-          />
-        </InputGroup>
-        <InputGroup>
-          <Label>Ширина (м)</Label>
-          <Input
-            type="number"
             value={params.width}
-            onChange={handleRequiredNumber('width', 2, 10)}
-            min="2"
-            max="10"
-            step="0.1"
+            onChange={(e) => onChange('width', parseFloat(e.target.value))}
+            style={{ width: '100%' }}
           />
-        </InputGroup>
-        <InputGroup>
-          <Label>Высота (м)</Label>
-          <Input
-            type="number"
-            value={params.height}
-            onChange={handleRequiredNumber('height', 1.5, 4)}
+        </div>
+
+        <div style={{ marginBottom: '16px' }}>
+          <Label>Высота (м): {params.height.toFixed(1)}</Label>
+          <input
+            type="range"
             min="1.5"
             max="4"
             step="0.1"
+            value={params.height}
+            onChange={(e) => onChange('height', parseFloat(e.target.value))}
+            style={{ width: '100%' }}
           />
-        </InputGroup>
+        </div>
+
         <InputGroup>
           <Label>Тип крыши</Label>
           <Select
@@ -107,30 +96,33 @@ const GazeboControls: React.FC<GazeboControlsProps> = ({ params, onChange }) => 
         </InputGroup>
 
         {(params.roofType === 'gable' || params.roofType === 'single' || params.roofType === 'arched') && (
-          <InputGroup>
-            <Label>Высота крыши (м)</Label>
-            <Input
-              type="number"
-              value={params.roofHeight}
-              onChange={handleRequiredNumber('roofHeight', 0.3, 3)}
+          <div style={{ marginBottom: '16px' }}>
+            <Label>Высота крыши (м): {params.roofHeight.toFixed(1)}</Label>
+            <input
+              type="range"
               min="0.3"
               max="3"
               step="0.1"
+              value={params.roofHeight}
+              onChange={(e) => onChange('roofHeight', parseFloat(e.target.value))}
+              style={{ width: '100%' }}
             />
-          </InputGroup>
+          </div>
         )}
 
-        <InputGroup>
-          <Label>Свес кровли (м)</Label>
-          <Input
-            type="number"
-            value={params.overhang}
-            onChange={handleRequiredNumber('overhang', 0, 0.5)}
+        <div style={{ marginBottom: '16px' }}>
+          <Label>Свес кровли (м): {params.overhang.toFixed(2)}</Label>
+          <input
+            type="range"
             min="0"
             max="0.5"
             step="0.05"
+            value={params.overhang}
+            onChange={(e) => onChange('overhang', parseFloat(e.target.value))}
+            style={{ width: '100%' }}
           />
-        </InputGroup>
+        </div>
+
         <CheckboxContainer>
           <CheckboxItem onClick={() => onChange('showRoofCover', !params.showRoofCover)}>
             <StyledCheckbox
@@ -223,68 +215,69 @@ const GazeboControls: React.FC<GazeboControlsProps> = ({ params, onChange }) => 
         </CheckboxContainer>
         {params.hasFurniture && (
           <>
-            <InputGroup>
-              <Label>Количество скамеек</Label>
-              <Input
-                type="number"
-                value={params.benchCount}
-                onChange={handleRequiredInt('benchCount', 1, 8)}
+            <div style={{ marginBottom: '16px' }}>
+              <Label>Количество скамеек: {params.benchCount}</Label>
+              <input
+                type="range"
                 min="1"
                 max="8"
                 step="1"
+                value={params.benchCount}
+                onChange={(e) => onChange('benchCount', parseInt(e.target.value))}
+                style={{ width: '100%' }}
               />
-            </InputGroup>
+            </div>
 
             <SectionTitle style={{ fontSize: '1rem', marginTop: '16px' }}>Параметры скамеек (опционально)</SectionTitle>
-            <InputGroup>
-              <Label>Длина скамейки (м)</Label>
-              <Input
-                type="number"
+            <div style={{ marginBottom: '16px' }}>
+              <Label>Длина скамейки (м): {(params.benchLength ?? (params.width || 3)).toFixed(1)}</Label>
+              <input
+                type="range"
                 step="0.1"
                 min="0.5"
                 max={Math.max(params.width, params.length)}
-                value={params.benchLength ?? ''}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                  const val = e.target.value === '' ? undefined : parseFloat(e.target.value);
-                  onChange('benchLength', val);
-                }}
-                placeholder="Авто (по стене)"
+                value={params.benchLength ?? (params.width || 3)}
+                onChange={(e) => onChange('benchLength', parseFloat(e.target.value))}
+                style={{ width: '100%' }}
               />
-            </InputGroup>
-            <InputGroup>
-              <Label>Ширина сиденья (м)</Label>
-              <Input
-                type="number"
+            </div>
+            <div style={{ marginBottom: '16px' }}>
+              <Label>Ширина сиденья (м): {(params.benchSeatWidth ?? 0.4).toFixed(2)}</Label>
+              <input
+                type="range"
                 step="0.05"
                 min="0.2"
                 max="0.8"
                 value={params.benchSeatWidth ?? 0.4}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange('benchSeatWidth', parseFloat(e.target.value))}
+                onChange={(e) => onChange('benchSeatWidth', parseFloat(e.target.value))}
+                style={{ width: '100%' }}
               />
-            </InputGroup>
-            <InputGroup>
-              <Label>Высота скамейки (м)</Label>
-              <Input
-                type="number"
+            </div>
+            <div style={{ marginBottom: '16px' }}>
+              <Label>Высота скамейки (м): {(params.benchHeight ?? 0.45).toFixed(2)}</Label>
+              <input
+                type="range"
                 step="0.05"
                 min="0.2"
                 max="0.8"
                 value={params.benchHeight ?? 0.45}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange('benchHeight', parseFloat(e.target.value))}
+                onChange={(e) => onChange('benchHeight', parseFloat(e.target.value))}
+                style={{ width: '100%' }}
               />
-            </InputGroup>
+            </div>
 
-            <InputGroup>
-              <Label>Количество столов</Label>
-              <Input
-                type="number"
-                value={params.tableCount ?? 1}
-                onChange={handleRequiredInt('tableCount', 1, 6)}
+            <div style={{ marginBottom: '16px' }}>
+              <Label>Количество столов: {params.tableCount ?? 1}</Label>
+              <input
+                type="range"
                 min="1"
                 max="6"
                 step="1"
+                value={params.tableCount ?? 1}
+                onChange={(e) => onChange('tableCount', parseInt(e.target.value))}
+                style={{ width: '100%' }}
               />
-            </InputGroup>
+            </div>
 
             <InputGroup>
               <Label>Ориентация стола</Label>
@@ -353,51 +346,42 @@ const GazeboControls: React.FC<GazeboControlsProps> = ({ params, onChange }) => 
             </InputGroup>
 
             <SectionTitle style={{ fontSize: '0.95rem', color: '#555', marginTop: '8px' }}>Ручные размеры (заполните для переопределения)</SectionTitle>
-            <InputGroup>
-              <Label>Ширина стола (м)</Label>
-              <Input
-                type="number"
+            <div style={{ marginBottom: '16px' }}>
+              <Label>Ширина стола (м): {(params.tableWidth ?? (params.tableSize === 'small' ? 0.6 : params.tableSize === 'medium' ? 0.8 : 1.0)).toFixed(2)}</Label>
+              <input
+                type="range"
                 step="0.1"
                 min="0.4"
                 max={params.width}
-                value={params.tableWidth ?? ''}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                  const val = e.target.value === '' ? undefined : parseFloat(e.target.value);
-                  onChange('tableWidth', val);
-                }}
-                placeholder={params.tableSize === 'small' ? '0.6' : params.tableSize === 'medium' ? '0.8' : '1.0'}
+                value={params.tableWidth ?? (params.tableSize === 'small' ? 0.6 : params.tableSize === 'medium' ? 0.8 : 1.0)}
+                onChange={(e) => onChange('tableWidth', parseFloat(e.target.value))}
+                style={{ width: '100%' }}
               />
-            </InputGroup>
-            <InputGroup>
-              <Label>Глубина стола (м)</Label>
-              <Input
-                type="number"
+            </div>
+            <div style={{ marginBottom: '16px' }}>
+              <Label>Глубина стола (м): {(params.tableDepth ?? (params.tableSize === 'small' ? 0.6 : params.tableSize === 'medium' ? 0.8 : 1.0)).toFixed(2)}</Label>
+              <input
+                type="range"
                 step="0.1"
                 min="0.4"
                 max={params.length}
-                value={params.tableDepth ?? ''}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                  const val = e.target.value === '' ? undefined : parseFloat(e.target.value);
-                  onChange('tableDepth', val);
-                }}
-                placeholder={params.tableSize === 'small' ? '0.6' : params.tableSize === 'medium' ? '0.8' : '1.0'}
+                value={params.tableDepth ?? (params.tableSize === 'small' ? 0.6 : params.tableSize === 'medium' ? 0.8 : 1.0)}
+                onChange={(e) => onChange('tableDepth', parseFloat(e.target.value))}
+                style={{ width: '100%' }}
               />
-            </InputGroup>
-            <InputGroup>
-              <Label>Высота стола (м)</Label>
-              <Input
-                type="number"
+            </div>
+            <div style={{ marginBottom: '16px' }}>
+              <Label>Высота стола (м): {(params.tableHeight ?? 0.75).toFixed(2)}</Label>
+              <input
+                type="range"
                 step="0.05"
                 min="0.5"
                 max="1.2"
-                value={params.tableHeight ?? ''}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                  const val = e.target.value === '' ? undefined : parseFloat(e.target.value);
-                  onChange('tableHeight', val);
-                }}
-                placeholder="0.75"
+                value={params.tableHeight ?? 0.75}
+                onChange={(e) => onChange('tableHeight', parseFloat(e.target.value))}
+                style={{ width: '100%' }}
               />
-            </InputGroup>
+            </div>
           </>
         )}
       </ControlSection>
