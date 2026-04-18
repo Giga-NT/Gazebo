@@ -1,172 +1,146 @@
+// src/utils/greenhouseCalculator.ts
 import { GreenhouseParams } from '../types/GreenhouseTypes';
+import { getGreenhousePrices, GreenhousePrices } from '../services/priceService';
 
-export const calculateGreenhouseCost = (params: GreenhouseParams) => {
-  // Цены в рублях
-  const prices = {
-    cover: {
-      polycarbonate: { material: 600, work: 400 },
-      glass: { material: 1500, work: 700 },
-      film: { material: 200, work: 100 }
-    },
-    frame: {
-      metal: {
-        '40x20': 500,
-        '60x60': 700,
-        '80x80': 900,
-        '100x100': 1200
-      },
-      pvc: 800,
-      wood: 600
-    },
-    foundation: {
-      wood: { material: 1000, work: 500 },
-      concrete: { material: 2500, work: 1500 },
-      piles: { material: 3000, work: 2000 },
-      none: { material: 0, work: 0 }
-    },
-    additional: {
-      ventilation: { material: 2000, work: 1000 },
-      doors: { material: 5000, work: 2000 },
-      partition: { material: 3000, work: 1500 },
-      shelving: { material: 4000, work: 2000 } // за метр погонный
-    },
-    screws: { material: 10, work: 0.5 },
-    painting: { material: 150, work: 100 }
-  };
+export interface PipeDetail {
+  size: string;
+  length: number;
+  pricePerMeter: number;
+  cost: number;
+}
 
-  // Расчет площади покрытия
+export const calculateGreenhouseCost = async (params: GreenhouseParams) => {
+  const prices: GreenhousePrices = await getGreenhousePrices();
+
+  // ============================================================
+  // 1. РАСЧЁТ ДЛИНЫ ТРУБ ПО ТИПОРАЗМЕРАМ
+  // ============================================================
+  
   let coverArea = 0;
+  let frameLength = 0;
+  
   if (params.type === 'arched') {
-    // Примерный расчет для арочной теплицы
     const archLength = Math.PI * params.height / 2;
     coverArea = (params.length * archLength) + (params.width * params.length * 2);
+    frameLength = (params.wallHeight * 4 * 2) + ((params.length * 2 + params.width * 2) * 2) + (params.length * 4 * 2);
   } else {
-    // Расчет для двускатной теплицы
     const roofHeight = params.width * Math.tan(params.roofAngle * Math.PI / 180);
     const roofSide = Math.sqrt(Math.pow(params.width/2, 2) + Math.pow(roofHeight, 2));
     coverArea = (params.length * roofSide * 2) + (params.width * params.length * 2);
+    frameLength = (params.wallHeight * 4 * 2) + ((params.length * 2 + params.width * 2) * 2) + (params.width * params.trussCount * 2);
   }
-
-  // Расчет длины каркаса
-  let frameLength = 0;
-  if (params.type === 'arched') {
-    // Вертикальные стойки
-    frameLength += params.wallHeight * 4 * 2;
-    // Горизонтальные элементы
-    frameLength += (params.length * 2 * 2) + (params.width * 2 * 2);
-    // Арочные элементы
-    frameLength += params.length * 4 * 2;
-  } else {
-    // Вертикальные стойки
-    frameLength += params.wallHeight * 4 * 2;
-    // Горизонтальные элементы
-    frameLength += (params.length * 2 * 2) + (params.width * 2 * 2);
-    // Стропила
-    frameLength += params.width * params.trussCount * 2;
-  }
-
-  // Расчет стоимости материалов
-  const coverMaterialCost = coverArea * prices.cover[params.coverMaterial].material;
-  const frameMaterialCost = frameLength * prices.frame.metal[params.frameMaterial === 'metal' ? '40x20' : '60x60'];
   
-  // Расчет фундамента
+  // ============================================================
+  // 2. ПОЛУЧЕНИЕ ЦЕН НА ТРУБЫ
+  // ============================================================
+  
+  const getPipePrice = (size: string): number => {
+    if (prices.pipes && (prices.pipes as any)[size]) {
+      return (prices.pipes as any)[size];
+    }
+    
+    const defaultPrices: Record<string, number> = {
+      '40x20x2': 130,
+      '40x20x1.5': 110,
+      '60x60x3': 380,
+      '80x80x3': 510,
+    };
+    
+    return defaultPrices[size] || 130;
+  };
+  
+  // Для теплицы используем трубу 40x20x2
+  const pipeSize = '40x20x2';
+  const pipePrice = getPipePrice(pipeSize);
+  const frameCost = frameLength * pipePrice;
+  
+  // ============================================================
+  // 3. ПОКРЫТИЕ
+  // ============================================================
+  
+  const coverPrices = prices.cover?.[params.coverMaterial] || { material: 600, work: 400 };
+  const coverCost = coverArea * coverPrices.material;
+  const coverWorkCost = coverArea * coverPrices.work;
+  
+  // ============================================================
+  // 4. ФУНДАМЕНТ
+  // ============================================================
+  
   const foundationPerimeter = (params.length * 2) + (params.width * 2);
-  const foundationMaterialCost = foundationPerimeter * prices.foundation[params.foundationType].material;
-  const foundationWorkCost = foundationPerimeter * prices.foundation[params.foundationType].work;
-
-  // Дополнительные элементы
-  let additionalMaterialCost = 0;
+  const foundationPrices = prices.foundation?.[params.foundationType] || { material: 1000, work: 500 };
+  const foundationCost = foundationPerimeter * foundationPrices.material;
+  const foundationWorkCost = foundationPerimeter * foundationPrices.work;
+  
+  // ============================================================
+  // 5. ДОПОЛНИТЕЛЬНЫЕ ЭЛЕМЕНТЫ
+  // ============================================================
+  
+  let additionalCost = 0;
   let additionalWorkCost = 0;
   
   if (params.hasVentilation) {
-    additionalMaterialCost += prices.additional.ventilation.material;
-    additionalWorkCost += prices.additional.ventilation.work;
+    additionalCost += prices.additional?.ventilation?.material || 2000;
+    additionalWorkCost += prices.additional?.ventilation?.work || 1000;
   }
-  
   if (params.hasDoors) {
-    additionalMaterialCost += prices.additional.doors.material;
-    additionalWorkCost += prices.additional.doors.work;
+    additionalCost += prices.additional?.doors?.material || 5000;
+    additionalWorkCost += prices.additional?.doors?.work || 2000;
   }
   
-  additionalMaterialCost += params.partitionCount * prices.additional.partition.material;
-  additionalWorkCost += params.partitionCount * prices.additional.partition.work;
-  
-  if (params.shelving) {
-    additionalMaterialCost += params.length * prices.additional.shelving.material;
-    additionalWorkCost += params.length * prices.additional.shelving.work;
-  }
-
   // Крепеж
-  const screwCount = Math.ceil(coverArea * 8); // 8 шурупов на м²
-  const screwsMaterialCost = screwCount * prices.screws.material;
-  const screwsWorkCost = screwCount * prices.screws.work;
-
-  // Монтаж
-  const coverWorkCost = coverArea * prices.cover[params.coverMaterial].work;
-  const frameWorkCost = frameLength * 200; // 200 руб/м.п. за сборку каркаса
+  const screwCount = Math.ceil(coverArea * 8);
+  const screwCost = screwCount * (prices.screws?.material || 10);
+  const screwWorkCost = screwCount * (prices.screws?.work || 0.5);
   
   // Покраска
-  const paintingArea = frameLength * 0.2; // Условная площадь для покраски
-  const paintingCost = paintingArea * (prices.painting.material + prices.painting.work);
-
-  // Итоги
-  const materialsCost = coverMaterialCost + frameMaterialCost + foundationMaterialCost + 
-                       additionalMaterialCost + screwsMaterialCost;
-  const workCost = coverWorkCost + frameWorkCost + foundationWorkCost + 
-                  additionalWorkCost + screwsWorkCost + paintingCost;
-  const totalCost = materialsCost + workCost;
-
+  const paintingArea = frameLength * 0.2;
+  const paintingCost = paintingArea * ((prices.painting?.material || 100) + (prices.painting?.work || 100));
+  
+  // ============================================================
+  // 6. ИТОГИ
+  // ============================================================
+  
+  const totalMaterials = frameCost + coverCost + foundationCost + additionalCost + screwCost;
+  const totalWorks = coverWorkCost + foundationWorkCost + additionalWorkCost + screwWorkCost + paintingCost;
+  const totalCost = totalMaterials + totalWorks;
+  
   return {
-    coverMaterial: {
-      name: 'Материал покрытия',
-      cost: coverMaterialCost,
-      details: `${coverArea.toFixed(1)} м² × ${prices.cover[params.coverMaterial].material} ₽/м²`
-    },
     frame: {
       name: 'Каркас',
-      cost: frameMaterialCost,
-      details: `${frameLength.toFixed(1)} м × ${prices.frame.metal[params.frameMaterial === 'metal' ? '40x20' : '60x60']} ₽/м.п.`
+      cost: frameCost,
+      details: `${frameLength.toFixed(1)} м × ${pipePrice} ₽/м (${pipeSize})`
+    },
+    cover: {
+      name: 'Покрытие',
+      cost: coverCost,
+      work: coverWorkCost,
+      details: `${coverArea.toFixed(1)} м² × ${coverPrices.material} ₽/м²`
     },
     foundation: {
       name: 'Фундамент',
-      cost: foundationMaterialCost,
+      cost: foundationCost,
       work: foundationWorkCost,
       details: `${foundationPerimeter.toFixed(1)} м.п. (${params.foundationType})`
     },
     additional: {
-      name: 'Дополнительные элементы',
-      cost: additionalMaterialCost,
+      name: 'Дополнительно',
+      cost: additionalCost,
       work: additionalWorkCost,
-      details: [
-        params.hasVentilation ? 'Вентиляция: 1 шт' : '',
-        params.hasDoors ? 'Двери: 1 шт' : '',
-        params.partitionCount > 0 ? `Перегородки: ${params.partitionCount} шт` : '',
-        params.shelving ? `Полки: ${params.length} м.п.` : ''
-      ].filter(Boolean).join(', ')
+      details: `${params.hasVentilation ? 'Вентиляция, ' : ''}${params.hasDoors ? 'Двери' : ''}`
     },
     screws: {
       name: 'Крепеж',
-      cost: screwsMaterialCost,
-      work: screwsWorkCost,
-      details: `${screwCount} шт × ${prices.screws.material} ₽`
-    },
-    coverWork: {
-      name: 'Монтаж покрытия',
-      cost: coverWorkCost,
-      details: `${coverArea.toFixed(1)} м² × ${prices.cover[params.coverMaterial].work} ₽/м²`
-    },
-    frameWork: {
-      name: 'Сборка каркаса',
-      cost: frameWorkCost,
-      details: `${frameLength.toFixed(1)} м × 200 ₽/м.п.`
+      cost: screwCost,
+      work: screwWorkCost,
+      details: `${screwCount} шт × 10 ₽`
     },
     painting: {
       name: 'Покраска',
       cost: paintingCost,
-      details: `${paintingArea.toFixed(1)} м² × ${prices.painting.material + prices.painting.work} ₽/м²`
+      details: `${paintingArea.toFixed(1)} м²`
     },
-    totalCost,
-    coverArea,
-    frameLength
+    totalMaterials,
+    totalWorks,
+    totalCost
   };
 };

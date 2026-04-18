@@ -1,11 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense, lazy } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { DemoScene } from '../components/DemoScene/DemoScene';
 import './LoginPage.css';
-
 // Импорт логотипа
 import logoImage from '../assets/images/logo.svg';
+// Ленивая загрузка DemoScene — решает проблему с ошибкой при первом запуске
+const DemoScene = lazy(() => 
+  import('../components/DemoScene/DemoScene').then(module => ({ default: module.DemoScene }))
+);
+
 
 interface LoginForm {
   email: string;
@@ -25,7 +28,6 @@ export const LoginPage = () => {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [activeModel, setActiveModel] = useState<'canopy' | 'gazebo' | 'greenhouse'>('canopy');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,8 +51,6 @@ export const LoginPage = () => {
       [name]: type === 'checkbox' ? checked : value,
     }));
   };
-
-
 
   return (
     <div className="login-page">
@@ -219,12 +219,27 @@ export const LoginPage = () => {
               </div>
             </div>
 
-            {/* 3D Demo Scene */}
+            {/* 3D Demo Scene with Lazy Loading */}
             <div className="demo-panel">
-
-              
               <div className="demo-scene-wrapper">
-                <DemoScene />
+                <Suspense fallback={
+                  <div style={{ 
+                    textAlign: 'center', 
+                    padding: '50px',
+                    background: '#f5f7fa',
+                    borderRadius: '12px',
+                    height: '400px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexDirection: 'column'
+                  }}>
+                    <span style={{ fontSize: '48px' }}>🏗️</span>
+                    <p>Загрузка 3D сцены...</p>
+                  </div>
+                }>
+                  <DemoScene />
+                </Suspense>
               </div>
               
               <div className="demo-panel__content">

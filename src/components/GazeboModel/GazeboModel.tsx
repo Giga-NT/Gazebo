@@ -21,7 +21,7 @@ import GazeboTrusses from '../Gazebo/GazeboTrusses';
 import GazeboLathing from '../Gazebo/GazeboLathing';
 import GazeboRoofCover from '../Gazebo/GazeboRoofCover';
 import GazeboGables from '../Gazebo/GazeboGables';
-import { calculateGazeboCost, defaultPrices } from '../../utils/gazeboCostCalculation';
+import { calculateGazeboCost } from '../../utils/gazeboCostCalculation';
 import { getGazeboPrices } from '../../services/priceService';
 
 // ===== СТИЛИ ДЛЯ МОБИЛЬНОГО МЕНЮ С АККОРДЕОНОМ =====
@@ -622,7 +622,6 @@ const GazeboModel: React.FC = () => {
   const projectId = searchParams.get('project');
 
   const [params, setParams] = useState<GazeboParams>(initialGazeboParams);
-  const [prices, setPrices] = useState(defaultPrices);
   const [saveModalOpen, setSaveModalOpen] = useState(false);
   const [projectName, setProjectName] = useState('');
   const [isCostModalOpen, setIsCostModalOpen] = useState(false);
@@ -662,16 +661,17 @@ const GazeboModel: React.FC = () => {
     };
   }, [isMobile, isMobileMenuOpen]);
 
-  // Загрузка цен при монтировании
-  useEffect(() => {
-    const loadPrices = async () => {
-      const savedPrices = await getGazeboPrices();
-      setPrices(savedPrices);
-    };
-    loadPrices();
-  }, []);
 
-  const costData = calculateGazeboCost(params, prices);
+
+	const [costData, setCostData] = useState<any>(null);
+
+	useEffect(() => {
+	  const loadCost = async () => {
+		const result = await calculateGazeboCost(params);
+		setCostData(result);
+	  };
+	  loadCost();
+	}, [params]);
 
   // Загрузка проекта из БД
   useEffect(() => {

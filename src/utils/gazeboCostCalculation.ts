@@ -1,128 +1,203 @@
 // src/utils/gazeboCostCalculation.ts
 import { GazeboParams } from '../types/gazeboTypes';
+import { getGazeboPrices, GazeboPrices } from '../services/priceService';
 
-export interface MaterialPrices {
-  material: number;
-  work: number;
+export interface PipeDetail {
+  size: string;
+  length: number;
+  pricePerMeter: number;
+  cost: number;
 }
 
-export interface Prices {
-  wood: MaterialPrices;
-  metal: MaterialPrices;
-  combined: MaterialPrices;
-  tile: { material: number; work: number };
-  concrete: MaterialPrices;
-  none: MaterialPrices;
-  foundation: {
-    wood: MaterialPrices;
-    concrete: MaterialPrices;
-    piles: MaterialPrices;
-    none: MaterialPrices;
-  };
-  furniture: {
-    bench: number;
-    table: { small: number; medium: number; large: number };
-  };
-  roofing: {
-    shingles: number;
-    metal: number;
-    polycarbonate: number;
-  };
-}
+export const calculateGazeboCost = async (params: GazeboParams) => {
+  const prices: GazeboPrices = await getGazeboPrices();
 
-export const defaultPrices: Prices = {
-  wood: { material: 1500, work: 800 },
-  metal: { material: 1200, work: 600 },
-  combined: { material: 1800, work: 1000 },
-  tile: { material: 2000, work: 1000 },
-  concrete: { material: 1800, work: 700 },
-  none: { material: 0, work: 0 },
-  foundation: {
-    wood: { material: 2500, work: 1200 },
-    concrete: { material: 3500, work: 1500 },
-    piles: { material: 3000, work: 1300 },
-    none: { material: 0, work: 0 }
-  },
-  furniture: {
-    bench: 3000,
-    table: { small: 5000, medium: 7000, large: 9000 }
-  },
-  roofing: {
-    shingles: 800,
-    metal: 600,
-    polycarbonate: 400
-  }
-};
-
-export const calculateGazeboCost = (params: GazeboParams, customPrices?: Prices) => {
-  const prices = customPrices || defaultPrices;
-
+  // ============================================================
+  // 1. РАСЧЁТ ДЛИНЫ ТРУБ ПО ТИПОРАЗМЕРАМ
+  // ============================================================
+  
   const perimeter = (params.width + params.length) * 2;
+  
+  // Стойки (4 угловые + промежуточные)
+  const pillarCount = 4 + Math.floor(perimeter / 2);
+  const pillarLength = pillarCount * params.height;
+  
+  // Верхняя обвязка (периметр)
+  const topFrameLength = perimeter;
+  
+  // Фермы крыши
   let roofArea = params.width * params.length;
-  if (params.roofType === 'gable') roofArea *= 1.2;
-  else if (params.roofType === 'arched') roofArea *= 1.3;
-
-  const frameMaterialCost = perimeter * params.height * prices[params.materialType].material;
-  const roofMaterialCost = roofArea * prices.roofing[params.materialType === 'wood' ? 'shingles' : 'metal'];
-
+  let trussCount = 4;
+  let trussLength = 0;
+  
+  if (params.roofType === 'gable') {
+    roofArea *= 1.2;
+    trussLength = params.width * trussCount * 2;
+  } else if (params.roofType === 'arched') {
+    roofArea *= 1.3;
+    trussLength = params.width * trussCount * 2.5;
+  } else {
+    trussLength = params.width * trussCount * 2;
+  }
+  
+  // Обрешётка
+  const lathingStep = 0.5;
+  const lathingRows = Math.ceil(params.length / lathingStep) + 1;
+  const lathingLength = lathingRows * params.width;
+  
+  // ============================================================
+  // 2. ПОЛУЧЕНИЕ ЦЕН НА ТРУБЫ
+  // ============================================================
+  
+  const getPipePrice = (size: string): number => {
+    if (prices.pipes && (prices.pipes as any)[size]) {
+      return (prices.pipes as any)[size];
+    }
+    
+    const defaultPrices: Record<string, number> = {
+      '80x80x3': 510,
+      '80x80x2': 380,
+      '60x60x3': 380,
+      '60x60x2': 280,
+      '40x20x2': 130,
+      '40x20x1.5': 110,
+    };
+    
+    return defaultPrices[size] || 280;
+  };
+  
+  const pipeDetails: PipeDetail[] = [];
+  
+  // Стойки (80x80x3)
+  const pillarSize = '80x80x3';
+  pipeDetails.push({
+    size: pillarSize,
+    length: pillarLength,
+    pricePerMeter: getPipePrice(pillarSize),
+    cost: pillarLength * getPipePrice(pillarSize)
+  });
+  
+  // Верхняя обвязка (80x80x2)
+  const frameSize = '80x80x2';
+  pipeDetails.push({
+    size: frameSize,
+    length: topFrameLength,
+    pricePerMeter: getPipePrice(frameSize),
+    cost: topFrameLength * getPipePrice(frameSize)
+  });
+  
+  // Фермы (60x60x3)
+  const trussSize = '60x60x3';
+  pipeDetails.push({
+    size: trussSize,
+    length: trussLength,
+    pricePerMeter: getPipePrice(trussSize),
+    cost: trussLength * getPipePrice(trussSize)
+  });
+  
+  // Обрешётка (40x20x2)
+  const lathingSize = '40x20x2';
+  pipeDetails.push({
+    size: lathingSize,
+    length: lathingLength,
+    pricePerMeter: getPipePrice(lathingSize),
+    cost: lathingLength * getPipePrice(lathingSize)
+  });
+  
+  const totalPipeCost = pipeDetails.reduce((sum, p) => sum + p.cost, 0);
+  const totalPipeLength = pipeDetails.reduce((sum, p) => sum + p.length, 0);
+  
+  const getFrameDetails = () => {
+    return pipeDetails
+      .filter(p => p.length > 0)
+      .map(p => `${p.size}: ${p.length.toFixed(1)} м = ${p.cost.toLocaleString('ru-RU')} ₽`)
+      .join('\n');
+  };
+  
+  // ============================================================
+  // 3. ОСТАЛЬНЫЕ МАТЕРИАЛЫ
+  // ============================================================
+  
+  // Кровля
+  let roofPricePerM2 = 0;
+  if (params.materialType === 'wood') {
+    roofPricePerM2 = prices.roofing?.shingles || 800;
+  } else {
+    roofPricePerM2 = prices.roofing?.metal || 600;
+  }
+  const roofCost = roofArea * roofPricePerM2;
+  
+  // Фундамент
   const foundationPerimeter = perimeter;
-  const foundationMaterialCost = foundationPerimeter * prices.foundation[params.foundationType].material;
-  const foundationWorkCost = foundationPerimeter * prices.foundation[params.foundationType].work;
-
+  const foundationPrices = prices.foundation?.[params.foundationType] || { material: 2500, work: 1200 };
+  const foundationCost = foundationPerimeter * foundationPrices.material;
+  const foundationWorkCost = foundationPerimeter * foundationPrices.work;
+  
+  // Пол
   const floorArea = params.width * params.length;
-  const floorMaterialCost = floorArea * prices[params.floorType].material;
-  const floorWorkCost = floorArea * prices[params.floorType].work;
-
-  const furnitureMaterialCost =
-    params.benchCount * prices.furniture.bench +
-    prices.furniture.table[params.tableSize];
-  const furnitureWorkCost = furnitureMaterialCost * 0.3;
-
-  const materialsCost =
-    frameMaterialCost +
-    roofMaterialCost +
-    foundationMaterialCost +
-    floorMaterialCost +
-    (params.hasFurniture ? furnitureMaterialCost : 0);
-  const workCost =
-    perimeter * params.height * prices[params.materialType].work +
-    foundationWorkCost +
-    floorWorkCost +
-    (params.hasFurniture ? furnitureWorkCost : 0);
-  const totalCost = materialsCost + workCost;
-
+  let floorPrice = 0;
+  switch (params.floorType) {
+    case 'wood': floorPrice = prices.wood?.material || 1500; break;
+    case 'concrete': floorPrice = prices.concrete?.material || 1800; break;
+    case 'tile': floorPrice = prices.tile?.material || 2000; break;
+    default: floorPrice = 0;
+  }
+  const floorCost = floorArea * floorPrice;
+  
+  // Мебель
+  const furnitureCost = params.hasFurniture
+    ? (params.benchCount * (prices.furniture?.bench || 3000)) + (prices.furniture?.table?.[params.tableSize] || 5000)
+    : 0;
+  
+  // Работы
+  const frameWorkCost = totalPipeLength * (prices.metal?.work || 600);
+  const roofWorkCost = roofArea * (roofPricePerM2 * 0.5);
+  const floorWorkCost = floorArea * (floorPrice * 0.3);
+  const furnitureWorkCost = furnitureCost * 0.3;
+  
+  const totalMaterials = totalPipeCost + roofCost + foundationCost + floorCost + furnitureCost;
+  const totalWorks = frameWorkCost + roofWorkCost + foundationWorkCost + floorWorkCost + furnitureWorkCost;
+  const totalCost = totalMaterials + totalWorks;
+  
   return {
+    pipeDetails,
+    totalPipeLength,
+    totalPipeCost,
     frame: {
-      name: 'Каркас беседки',
-      cost: frameMaterialCost,
-      details: `Периметр: ${perimeter.toFixed(1)} м × Высота: ${params.height.toFixed(1)} м × ${prices[params.materialType].material} ₽/м²`
+      name: 'Металлоконструкции',
+      cost: totalPipeCost,
+      details: `Всего труб: ${totalPipeLength.toFixed(1)} м\n` + getFrameDetails()
     },
     roof: {
       name: 'Крыша',
-      cost: roofMaterialCost,
-      details: `${roofArea.toFixed(1)} м² × ${prices.roofing[params.materialType === 'wood' ? 'shingles' : 'metal']} ₽/м²`
+      cost: roofCost,
+      details: `${roofArea.toFixed(1)} м² × ${roofPricePerM2} ₽/м²`
     },
     foundation: {
       name: 'Фундамент',
-      cost: foundationMaterialCost,
+      cost: foundationCost,
       work: foundationWorkCost,
-      details: `Периметр: ${foundationPerimeter.toFixed(1)} м × ${prices.foundation[params.foundationType].material} ₽/м`
+      details: `Периметр: ${foundationPerimeter.toFixed(1)} м (${params.foundationType})`
     },
     floor: {
       name: 'Пол',
-      cost: floorMaterialCost,
+      cost: floorCost,
       work: floorWorkCost,
-      details: `${floorArea.toFixed(1)} м² × ${prices[params.floorType].material} ₽/м²`
+      details: `${floorArea.toFixed(1)} м² × ${floorPrice} ₽/м²`
     },
     furniture: {
       name: 'Мебель',
-      cost: furnitureMaterialCost,
+      cost: furnitureCost,
       work: furnitureWorkCost,
-      details: `Скамейки: ${params.benchCount} × ${prices.furniture.bench} ₽\nСтол: 1 × ${prices.furniture.table[params.tableSize]} ₽`
+      details: `Скамейки: ${params.benchCount} шт, Стол: ${params.tableSize}`
     },
-    totalCost,
-    perimeter,
-    roofArea,
-    floorArea
+    frameWork: {
+      name: 'Сборка каркаса',
+      cost: frameWorkCost,
+      details: `${totalPipeLength.toFixed(1)} м × ${prices.metal?.work || 600} ₽/м`
+    },
+    totalMaterials,
+    totalWorks,
+    totalCost
   };
 };

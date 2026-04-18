@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Read(C:\\MaxGG\\DRUG77\\dpd_route_builder/**)"
+      "Read(C:\\MaxGG\\DRUG77\\dpd_route_builder/**)",
+      "Bash(del *)"
     ]
   },
   "$version": 3

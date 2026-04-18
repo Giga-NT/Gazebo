@@ -680,6 +680,11 @@ const handleOpenProject = (project: Project) => {
 			    <h3>Конструктор складов</h3>
 			    <p>Создайте склад или ангар</p>
 			  </div>
+			  <div className="action-card" onClick={() => navigate('/bania-barrel')}>
+			    <div className="icon">🛁</div>
+			    <h3>Баня-бочка</h3>
+			    <p>Создайте баню-бочку</p>
+			  </div>
             </div>
 
             {projects.length > 0 && (

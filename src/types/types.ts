@@ -136,7 +136,7 @@ export interface CanopyParams {
   pillarCount: number;
   trussCount: number;
   roofType: 'gable' | 'arch' | 'shed' | 'flat';
-  trussType: 'simple' | 'reinforced' | 'lattice';
+  trussType: 'simple' | 'reinforced' | 'arched_narrow' |'lattice';
   constructionType: 'truss' | 'beam';
   beamSize: 'small' | 'medium' | 'large';
   lathingStep: number;

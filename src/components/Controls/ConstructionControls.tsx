@@ -86,13 +86,30 @@ const ConstructionControls: React.FC<ControlProps> = ({ params, onChange }) => {
           <label>Тип фермы: </label>
           <select 
             value={params.trussType} 
-            onChange={(e) => onChange('trussType', e.target.value)}
+            onChange={(e) => {
+              const newTrussType = e.target.value;
+              onChange('trussType', newTrussType);
+              
+              // ЛОГИКА ЗАЩИТЫ: Если выбрали арочную ферму, но крыша не арочная -> ничего страшного, 
+              // FrameModel сам её скроет. Но если хотим жесткости:
+              // if (newTrussType === 'arched_narrow' && params.roofType !== 'arch') {
+              //    alert('Для арочной фермы выберите арочный тип кровли');
+              // }
+            }}
             style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
           >
             <option value="simple">Простая</option>
             <option value="reinforced">Усиленная</option>
             <option value="lattice">Решетчатая</option>
+            <option value="arched_narrow">Арочная узкая</option>
           </select>
+          
+          {/* Подсказка для пользователя */}
+          {params.trussType === 'arched_narrow' && params.roofType !== 'arch' && (
+            <small style={{ color: '#e74c3c', display: 'block', marginTop: '5px' }}>
+              * Арочная ферма видна только при выборе "Арочной" кровли в основных параметрах.
+            </small>
+          )}
         </div>
       )}
 

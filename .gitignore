@@ -36,3 +36,10 @@ yarn-error.log*
 .idea
 *.swp
 *.swo
+
+# Баня-бочка компонент (проприетарный код)
+src/components/BaniaBarrel/
+src/components/BaniaBarrelModel/
+src/components/Controls/BaniaBarrel/
+src/types/BaniaBarrelTypes.ts
+src/textures/wood_pine.png".qwen/" 

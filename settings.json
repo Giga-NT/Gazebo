@@ -1,0 +1,19 @@
+{
+  "env": {
+    "OPENROUTER_API_KEY": "вставьте_ваш_ключ_sk-or-...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
+  "modelProviders": {
+    "openai": [
+      {
+        "id": "qwen/qwen-2.5-coder-32b-instruct",
+        "name": "Qwen 2.5 Coder 32B (OpenRouter)",
+        "description": "Отличная модель для кодинга через OpenRouter",
+        "envKey": "OPENROUTER_API_KEY",
+        "baseUrl": "https://openrouter.ai/api/v1",
+        "generationConfig": {
+          "temperature": 0.5,
+          "max_tokens": 4096
+        }
+      }
+    ]
+  }
+}

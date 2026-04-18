@@ -6,7 +6,7 @@ export interface MaterialWork {
   work: number;
 }
 
-// Цены для беседки (уже есть)
+// Цены для беседки
 export interface GazeboPrices {
   wood: MaterialWork;
   metal: MaterialWork;
@@ -29,29 +29,67 @@ export interface GazeboPrices {
     metal: number;
     polycarbonate: number;
   };
+  pipes: {
+    [key: string]: number;
+  };
 }
 
-// Цены для навеса (упрощённая, но гибкая структура)
+// Цены для навеса
 export interface CanopyPrices {
   roofMaterial: {
     polycarbonate: MaterialWork;
     metal: MaterialWork;
     tile: MaterialWork;
   };
-  frame: MaterialWork;            // стоимость каркаса за погонный метр
-  pillar: MaterialWork;           // стоимость одной стойки
-  truss: MaterialWork;            // стоимость одной фермы
-  lathing: MaterialWork;          // стоимость обрешётки за погонный метр
-  painting: MaterialWork;         // покраска за м²
+  frame: MaterialWork;
+  pillar: MaterialWork;
+  truss: MaterialWork;
+  lathing: MaterialWork;
+  painting: MaterialWork;
   foundation: {
     pillars: MaterialWork;
     slab: MaterialWork;
     surface: MaterialWork;
   };
-  screws: MaterialWork;           // крепеж (за штуку)
+  screws: MaterialWork;
+  pipes: {
+    '20x20x1.5': number;
+    '20x20x2': number;
+    '25x25x1.5': number;
+    '25x25x2': number;
+    '30x30x1.5': number;
+    '30x30x2': number;
+    '40x20x1.5': number;
+    '40x20x2': number;
+    '40x40x1.5': number;
+    '40x40x2': number;
+    '40x40x3': number;
+    '50x50x2': number;
+    '50x50x3': number;
+    '60x40x2': number;
+    '60x40x3': number;
+    '60x60x2': number;
+    '60x60x3': number;
+    '60x60x4': number;
+    '80x40x2': number;
+    '80x40x3': number;
+    '80x80x2': number;
+    '80x80x3': number;
+    '80x80x4': number;
+    '100x50x3': number;
+    '100x100x3': number;
+    '100x100x4': number;
+    '120x120x4': number;
+    '120x120x5': number;
+    '140x140x4': number;
+    '140x140x5': number;
+    '160x160x4': number;
+    '160x160x5': number;
+    '160x160x6': number;
+  };
 }
 
-// Цены для теплицы (из greenhouseCalculator.ts, адаптированные)
+// Цены для теплицы
 export interface GreenhousePrices {
   cover: {
     polycarbonate: MaterialWork;
@@ -78,33 +116,71 @@ export interface GreenhousePrices {
     ventilation: MaterialWork;
     doors: MaterialWork;
     partition: MaterialWork;
-    shelving: MaterialWork; // за метр
+    shelving: MaterialWork;
   };
   screws: MaterialWork;
   painting: MaterialWork;
+  pipes?: {
+    [key: string]: number;
+  };
 }
 
-// Дефолтные цены для навеса (взяты из canopyCalculator.ts и дополнены)
+// Дефолтные цены для навеса
 export const defaultCanopyPrices: CanopyPrices = {
   roofMaterial: {
     polycarbonate: { material: 600, work: 400 },
     metal: { material: 800, work: 400 },
     tile: { material: 1500, work: 700 },
   },
-  frame: { material: 500, work: 300 },   // за п.м.
-  pillar: { material: 2000, work: 1000 }, // за столб
-  truss: { material: 500, work: 300 },    // за ферму
-  lathing: { material: 300, work: 150 },  // за п.м.
-  painting: { material: 200, work: 100 }, // за м²
+  frame: { material: 180, work: 200 },
+  pillar: { material: 1200, work: 800 },
+  truss: { material: 200, work: 150 },
+  lathing: { material: 100, work: 80 },
+  painting: { material: 100, work: 150 },
   foundation: {
-    pillars: { material: 2000, work: 1000 },
-    slab: { material: 3500, work: 1500 },
-    surface: { material: 1000, work: 500 },
+    pillars: { material: 1200, work: 800 },
+    slab: { material: 2500, work: 1200 },
+    surface: { material: 800, work: 400 },
   },
-  screws: { material: 10, work: 0.5 },
+  screws: { material: 8, work: 0.5 },
+  pipes: {
+    '20x20x1.5': 70,
+    '20x20x2': 80,
+    '25x25x1.5': 90,
+    '25x25x2': 110,
+    '30x30x1.5': 110,
+    '30x30x2': 130,
+    '40x20x1.5': 110,
+    '40x20x2': 130,
+    '40x40x1.5': 150,
+    '40x40x2': 180,
+    '40x40x3': 250,
+    '50x50x2': 230,
+    '50x50x3': 320,
+    '60x40x2': 230,
+    '60x40x3': 310,
+    '60x60x2': 280,
+    '60x60x3': 380,
+    '60x60x4': 500,
+    '80x40x2': 280,
+    '80x40x3': 390,
+    '80x80x2': 380,
+    '80x80x3': 510,
+    '80x80x4': 670,
+    '100x50x3': 490,
+    '100x100x3': 650,
+    '100x100x4': 850,
+    '120x120x4': 1030,
+    '120x120x5': 1270,
+    '140x140x4': 1240,
+    '140x140x5': 1530,
+    '160x160x4': 1420,
+    '160x160x5': 1760,
+    '160x160x6': 2080,
+  },
 };
 
-// Дефолтные цены для теплицы (из greenhouseCalculator.ts)
+// Дефолтные цены для теплицы
 export const defaultGreenhousePrices: GreenhousePrices = {
   cover: {
     polycarbonate: { material: 600, work: 400 },
@@ -135,9 +211,15 @@ export const defaultGreenhousePrices: GreenhousePrices = {
   },
   screws: { material: 10, work: 0.5 },
   painting: { material: 150, work: 100 },
+  pipes: {
+    '40x20x2': 130,
+    '40x20x1.5': 110,
+    '60x60x3': 380,
+    '80x80x3': 510,
+  },
 };
 
-// Дефолтные цены для беседки (уже есть)
+// Дефолтные цены для беседки
 export const defaultGazeboPrices: GazeboPrices = {
   wood: { material: 1500, work: 800 },
   metal: { material: 1200, work: 600 },
@@ -159,6 +241,12 @@ export const defaultGazeboPrices: GazeboPrices = {
     shingles: 800,
     metal: 600,
     polycarbonate: 400,
+  },
+  pipes: {
+    '80x80x3': 510,
+    '80x80x2': 380,
+    '60x60x3': 380,
+    '40x20x2': 130,
   },
 };
 

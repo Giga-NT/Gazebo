@@ -18,6 +18,7 @@ import { OrderPage } from './pages/OrderPage';
 import { OrderDetailsPage } from './pages/OrderDetailsPage';
 import GazeboModel from './components/GazeboModel/GazeboModel';
 import WarehouseModel from './components/WarehouseModel/WarehouseModel';
+import BaniaBarrelModel from './components/BaniaBarrelModel/BaniaBarrelModel';
 import AdminRoute from './components/AdminRoute';
 import PriceEditor from './components/PriceEditor';
 import { PWAInstallPrompt } from './components/UI/PWAInstallPrompt';
@@ -71,7 +72,16 @@ function App() {
           </ProtectedRoute>
         }
       />
-	  
+
+      <Route
+        path="/bania-barrel"
+        element={
+          <ProtectedRoute>
+            <BaniaBarrelModel />
+          </ProtectedRoute>
+        }
+      />
+
 	  <Route path="/admin/prices" element={
 	    <AdminRoute>
 		<PriceEditor />

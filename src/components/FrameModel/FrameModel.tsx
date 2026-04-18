@@ -22,7 +22,9 @@ import Lathing from '../Beams/Lathing';
 import RoofCover from '../Roof/RoofCover';
 import { useAuth } from '../../hooks/useAuth';
 import { useLocation } from 'react-router-dom';
-
+import ArchedTruss from '../Beams/ArchedTruss';
+import LongitudinalBeams from '../Beams/LongitudinalBeams';
+import { calculateCanopyCost } from '../../utils/canopyCalculator';
 
 // Стилизованные компоненты
 const Container = styled.div<{ $isMobile: boolean }>`
@@ -221,138 +223,6 @@ const Ground = ({ groundType }: { groundType: string }) => {
   return null;
 };
 
-// Функция для расчета стоимости
-const calculateCost = (params: CanopyParams) => {
-  const prices = {
-    metal: { material: 800, work: 500 },
-    tile: { material: 1500, work: 700 },
-    polycarbonate: { material: 600, work: 400 },
-    tube: {
-      '100x100': 1200,
-      '80x80': 900,
-      '60x60': 700,
-      '40x20': 500
-    },
-    foundation: {
-      pillars: { material: 2000, work: 1000 },
-      slab: {
-        material: 3500,
-        formwork: 500,
-        reinforcement: 120,
-        sand: 800,
-        gravel: 1000,
-        insulation: 300,
-        waterproofing: 200,
-        work: 1500
-      }
-    },
-    screws: { material: 10, work: 0.5 },
-    frame: { work: 800 },
-    painting: { material: 200, work: 100 }
-  };
-
-  const roofArea = params.width * params.length * (params.roofType === 'gable' ? 1.2 : 1);
-  const frameArea = (params.width * params.height * 2) + (params.length * params.height * 2) + roofArea;
-  const screwNorms = { polycarbonate: 6, metal: 8, tile: 10 };
-
-  const roofMaterialCost = roofArea * prices[params.roofMaterial].material;
-  const pillarLength = params.height * params.pillarCount * 4;
-  const trussLength = params.width * params.trussCount * 2;
-  const lathingLength = params.length * (params.width / params.lathingStep);
-  
-  const tubeCost = 
-    pillarLength * prices.tube[params.pillarTubeSize] +
-    trussLength * prices.tube[params.roofTubeSize] +
-    trussLength * prices.tube[params.trussTubeSize] +
-    lathingLength * prices.tube[params.lathingTubeSize];
-
-  let foundationMaterialCost = 0;
-  let foundationWorkCost = 0;
-  let foundationDetails = '';
-  
-  if (params.foundationType === 'pillars') {
-    foundationMaterialCost = params.pillarCount * 2 * prices.foundation.pillars.material;
-    foundationWorkCost = params.pillarCount * 2 * prices.foundation.pillars.work;
-    foundationDetails = `${params.pillarCount * 2} столбов`;
-  } else if (params.foundationType === 'slab') {
-    const slabWidth = params.width + params.slabExtension * 2;
-    const slabLength = params.length + params.slabExtension * 2;
-    const slabThickness = params.slabThickness / 1000;
-    const slabVolume = slabWidth * slabLength * slabThickness;
-    const slabArea = slabWidth * slabLength;
-
-    const concreteCost = slabVolume * prices.foundation.slab.material;
-    const rebarWeight = (slabWidth / (params.rebarSpacing / 1000)) * slabLength * 2 * 0.617;
-    const rebarCost = rebarWeight * prices.foundation.slab.reinforcement;
-    const sandVolume = slabWidth * slabLength * 0.2;
-    const sandCost = sandVolume * prices.foundation.slab.sand;
-    const gravelVolume = slabWidth * slabLength * 0.1;
-    const gravelCost = gravelVolume * prices.foundation.slab.gravel;
-    const formworkCost = (slabWidth + slabLength) * 2 * prices.foundation.slab.formwork;
-    
-    foundationMaterialCost = concreteCost + rebarCost + sandCost + gravelCost + formworkCost;
-    
-    const earthworkCost = slabArea * 300;
-    const concreteWorkCost = slabVolume * prices.foundation.slab.work;
-    
-    foundationWorkCost = earthworkCost + concreteWorkCost;
-    
-    foundationDetails = `Плита: ${slabWidth.toFixed(1)}м × ${slabLength.toFixed(1)}м × ${slabThickness.toFixed(2)}м\nБетон: ${slabVolume.toFixed(1)}м³\nАрматура: ${rebarWeight.toFixed(0)}кг Ø${params.rebarDiameter}мм\nПесчаная подушка: ${sandVolume.toFixed(1)}м³\nЩебеночная подготовка: ${gravelVolume.toFixed(1)}м³\nОпалубка: ${((slabWidth + slabLength) * 2).toFixed(1)}м`;
-  }
-
-  const screwCount = Math.ceil(roofArea * screwNorms[params.roofMaterial]);
-  const screwsMaterialCost = screwCount * prices.screws.material;
-  const screwsWorkCost = screwCount * prices.screws.work;
-  const roofWorkCost = roofArea * prices[params.roofMaterial].work;
-  const frameWorkCost = frameArea * prices.frame.work;
-  const paintingCost = frameArea * (prices.painting.material + prices.painting.work);
-  const materialsCost = roofMaterialCost + tubeCost + foundationMaterialCost + screwsMaterialCost;
-  const workCost = roofWorkCost + frameWorkCost + foundationWorkCost + screwsWorkCost + paintingCost;
-  const totalCost = materialsCost + workCost;
-
-  return {
-    roofMaterial: {
-      name: 'Материал кровли',
-      cost: roofMaterialCost,
-      details: `${roofArea.toFixed(1)} м² × ${prices[params.roofMaterial].material} ₽/м²`
-    },
-    tube: {
-      name: 'Металлоконструкции',
-      cost: tubeCost,
-      details: `Трубы: ${pillarLength.toFixed(1)} м + ${trussLength.toFixed(1)} м + ${lathingLength.toFixed(1)} м`
-    },
-    foundation: {
-      name: 'Фундамент',
-      cost: foundationMaterialCost,
-      work: foundationWorkCost,
-      details: foundationDetails
-    },
-    screws: {
-      name: 'Крепеж',
-      cost: screwsMaterialCost,
-      work: screwsWorkCost,
-      details: `${screwCount} шт × ${prices.screws.material} ₽`
-    },
-    roofWork: {
-      name: 'Монтаж кровли',
-      cost: roofWorkCost,
-      details: `${roofArea.toFixed(1)} м² × ${prices[params.roofMaterial].work} ₽/м²`
-    },
-    frameWork: {
-      name: 'Сборка каркаса',
-      cost: frameWorkCost,
-      details: `${frameArea.toFixed(1)} м² × ${prices.frame.work} ₽/м²`
-    },
-    painting: {
-      name: 'Покраска',
-      cost: paintingCost,
-      details: `${frameArea.toFixed(1)} м² × ${prices.painting.material + prices.painting.work} ₽/м²`
-    },
-    totalCost,
-    screwCount
-  };
-};
-
 const exportToSTL = (scene: THREE.Scene) => {
   const exporter = new STLExporter();
   const result = exporter.parse(scene);
@@ -365,9 +235,11 @@ const exportToSTL = (scene: THREE.Scene) => {
 
 const PrintComponent = React.forwardRef<HTMLDivElement, {
   params: CanopyParams;
-  costs: ReturnType<typeof calculateCost>;
+  costs: any;
   screenshot: string | null;
 }>(({ params, costs, screenshot }, ref) => {
+  if (!costs) return <div>Загрузка цен...</div>;
+  
   return (
     <PrintContainer ref={ref}>
       <PrintHeader>"Giga-NT" - навесы и металлоконструкции</PrintHeader>
@@ -389,7 +261,6 @@ const PrintComponent = React.forwardRef<HTMLDivElement, {
         <div style={{ textAlign: 'center', color: 'gray' }}>Изображение загружается...</div>
       )}
 
-        
       <PrintSection>
         <h2>Основные параметры</h2>
         <p>Размеры: {params.width.toFixed(1)}м × {params.length.toFixed(1)}м × {(params.height + params.roofHeight).toFixed(1)}м</p>
@@ -412,73 +283,73 @@ const PrintComponent = React.forwardRef<HTMLDivElement, {
           </thead>
           <tbody>
             <PrintTableRow>
-              <PrintTableCell>{costs.roofMaterial.name}</PrintTableCell>
-              <PrintTableCell>{Math.round(costs.roofMaterial.cost).toLocaleString('ru-RU')} ₽</PrintTableCell>
+              <PrintTableCell>{costs.roof?.name || 'Материал кровли'}</PrintTableCell>
+              <PrintTableCell>{Math.round(costs.roof?.cost || 0).toLocaleString('ru-RU')} ₽</PrintTableCell>
               <PrintTableCell>-</PrintTableCell>
-              <PrintTableCell>{costs.roofMaterial.details}</PrintTableCell>
+              <PrintTableCell>{costs.roof?.details || ''}</PrintTableCell>
             </PrintTableRow>
             
             <PrintTableRow>
-              <PrintTableCell>{costs.tube.name}</PrintTableCell>
-              <PrintTableCell>{Math.round(costs.tube.cost).toLocaleString('ru-RU')} ₽</PrintTableCell>
+              <PrintTableCell>{costs.frame?.name || 'Металлоконструкции'}</PrintTableCell>
+              <PrintTableCell>{Math.round(costs.frame?.cost || 0).toLocaleString('ru-RU')} ₽</PrintTableCell>
               <PrintTableCell>-</PrintTableCell>
-              <PrintTableCell>{costs.tube.details}</PrintTableCell>
+              <PrintTableCell>{costs.frame?.details || ''}</PrintTableCell>
             </PrintTableRow>
 
             <PrintTableRow>
-              <PrintTableCell>{costs.foundation.name}</PrintTableCell>
-              <PrintTableCell>{Math.round(costs.foundation.cost).toLocaleString('ru-RU')} ₽</PrintTableCell>
-              <PrintTableCell>{Math.round(costs.foundation.work).toLocaleString('ru-RU')} ₽</PrintTableCell>
+              <PrintTableCell>{costs.foundation?.name || 'Фундамент'}</PrintTableCell>
+              <PrintTableCell>{Math.round(costs.foundation?.cost || 0).toLocaleString('ru-RU')} ₽</PrintTableCell>
+              <PrintTableCell>{Math.round(costs.foundation?.work || 0).toLocaleString('ru-RU')} ₽</PrintTableCell>
               <PrintTableCell>
-                <pre style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{costs.foundation.details}</pre>
+                <pre style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{costs.foundation?.details || ''}</pre>
               </PrintTableCell>
             </PrintTableRow>
 
             <PrintTableRow>
-              <PrintTableCell>{costs.screws.name}</PrintTableCell>
-              <PrintTableCell>{Math.round(costs.screws.cost).toLocaleString('ru-RU')} ₽</PrintTableCell>
-              <PrintTableCell>{Math.round(costs.screws.work).toLocaleString('ru-RU')} ₽</PrintTableCell>
-              <PrintTableCell>{costs.screws.details}</PrintTableCell>
+              <PrintTableCell>{costs.fasteners?.name || 'Крепеж'}</PrintTableCell>
+              <PrintTableCell>{Math.round(costs.fasteners?.cost || 0).toLocaleString('ru-RU')} ₽</PrintTableCell>
+              <PrintTableCell>{Math.round(costs.fasteners?.work || 0).toLocaleString('ru-RU')} ₽</PrintTableCell>
+              <PrintTableCell>{costs.fasteners?.details || ''}</PrintTableCell>
             </PrintTableRow>
 
             <PrintTableRow>
-              <PrintTableCell>{costs.roofWork.name}</PrintTableCell>
+              <PrintTableCell>{costs.roofWork?.name || 'Монтаж кровли'}</PrintTableCell>
               <PrintTableCell>-</PrintTableCell>
-              <PrintTableCell>{Math.round(costs.roofWork.cost).toLocaleString('ru-RU')} ₽</PrintTableCell>
-              <PrintTableCell>{costs.roofWork.details}</PrintTableCell>
+              <PrintTableCell>{Math.round(costs.roofWork?.cost || 0).toLocaleString('ru-RU')} ₽</PrintTableCell>
+              <PrintTableCell>{costs.roofWork?.details || ''}</PrintTableCell>
             </PrintTableRow>
 
             <PrintTableRow>
-              <PrintTableCell>{costs.frameWork.name}</PrintTableCell>
+              <PrintTableCell>{costs.frameWork?.name || 'Сборка каркаса'}</PrintTableCell>
               <PrintTableCell>-</PrintTableCell>
-              <PrintTableCell>{Math.round(costs.frameWork.cost).toLocaleString('ru-RU')} ₽</PrintTableCell>
-              <PrintTableCell>{costs.frameWork.details}</PrintTableCell>
+              <PrintTableCell>{Math.round(costs.frameWork?.cost || 0).toLocaleString('ru-RU')} ₽</PrintTableCell>
+              <PrintTableCell>{costs.frameWork?.details || ''}</PrintTableCell>
             </PrintTableRow>
 
             <PrintTableRow>
-              <PrintTableCell>{costs.painting.name}</PrintTableCell>
+              <PrintTableCell>{costs.painting?.name || 'Покраска'}</PrintTableCell>
               <PrintTableCell>-</PrintTableCell>
-              <PrintTableCell>{Math.round(costs.painting.cost).toLocaleString('ru-RU')} ₽</PrintTableCell>
-              <PrintTableCell>{costs.painting.details}</PrintTableCell>
+              <PrintTableCell>{Math.round(costs.painting?.cost || 0).toLocaleString('ru-RU')} ₽</PrintTableCell>
+              <PrintTableCell>{costs.painting?.details || ''}</PrintTableCell>
             </PrintTableRow>
 
             <PrintTotalRow>
               <PrintTableCell colSpan={2}>Итого материалы: {Math.round(
-                costs.roofMaterial.cost + 
-                costs.tube.cost + 
-                costs.foundation.cost + 
-                costs.screws.cost
+                (costs.roof?.cost || 0) + 
+                (costs.frame?.cost || 0) + 
+                (costs.foundation?.cost || 0) + 
+                (costs.fasteners?.cost || 0)
               ).toLocaleString('ru-RU')} ₽</PrintTableCell>
               <PrintTableCell colSpan={2}>Итого работы: {Math.round(
-                costs.foundation.work + 
-                costs.screws.work + 
-                costs.roofWork.cost + 
-                costs.frameWork.cost + 
-                costs.painting.cost
+                (costs.foundation?.work || 0) + 
+                (costs.fasteners?.work || 0) + 
+                (costs.roofWork?.cost || 0) + 
+                (costs.frameWork?.cost || 0) + 
+                (costs.painting?.cost || 0)
               ).toLocaleString('ru-RU')} ₽</PrintTableCell>
             </PrintTotalRow>
             <PrintTotalRow>
-              <PrintTableCell colSpan={4}>Общая стоимость: {Math.round(costs.totalCost).toLocaleString('ru-RU')} ₽</PrintTableCell>
+              <PrintTableCell colSpan={4}>Общая стоимость: {Math.round(costs.totalAmount || 0).toLocaleString('ru-RU')} ₽</PrintTableCell>
             </PrintTotalRow>
           </tbody>
         </PrintTable>
@@ -501,27 +372,25 @@ const FrameModel: React.FC = () => {
   const searchParams = new URLSearchParams(location.search);
   const projectId = searchParams.get('project');
   
-// ✅ 1. ВЫЗОВИТЕ ХУК НА ВЕРХНЕМ УРОВНЕ (в начале компонента)
-const { getUserProjects } = useAuth();
+  const { getUserProjects } = useAuth();
 
-useEffect(() => {
-  const loadProject = async () => {
-    if (projectId && currentUser) {
-      try {
-        // ✅ 2. ПРОСТО ИСПОЛЬЗУЙТЕ функцию, НЕ ВЫЗЫВАЙТЕ ХУК!
-        const projects = await getUserProjects();
-        const project = projects.find(p => p.id === projectId);
-        if (project) {
-          setParams(project.params);
+  useEffect(() => {
+    const loadProject = async () => {
+      if (projectId && currentUser) {
+        try {
+          const projects = await getUserProjects();
+          const project = projects.find(p => p.id === projectId);
+          if (project) {
+            setParams(project.params);
+          }
+        } catch (error) {
+          console.error('Error loading project:', error);
         }
-      } catch (error) {
-        console.error('Error loading project:', error);
       }
-    }
-  };
-  
-  loadProject();
-}, [projectId, currentUser, getUserProjects]); // ✅ 3. Добавьте getUserProjects в зависимости
+    };
+    
+    loadProject();
+  }, [projectId, currentUser, getUserProjects]);
 
   useEffect(() => {
     if (!isMounted.current) {
@@ -580,6 +449,38 @@ useEffect(() => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isActionsOpen, setIsActionsOpen] = useState(false);
   const [showOrientationAlert, setShowOrientationAlert] = useState(false);
+  const [isCostModalOpen, setIsCostModalOpen] = useState(false);
+  const [saveModalOpen, setSaveModalOpen] = useState(false);
+  const [projectName, setProjectName] = useState('');
+  const [screenshot, setScreenshot] = useState<string | null>(null);
+  const [isTakingScreenshot, setIsTakingScreenshot] = useState(false);
+  const printRef = useRef<HTMLDivElement>(null);
+  
+  // Загрузка цен из priceService
+  const [costs, setCosts] = useState<any>(null);
+
+  useEffect(() => {
+    const loadCost = async () => {
+      try {
+        const projectParams = {
+          width: params.width,
+          length: params.length,
+          height: params.height,
+          roofHeight: params.roofHeight,
+          overhang: params.overhang,
+          pillarCount: params.pillarCount,
+          trussCount: params.trussCount,
+          roofType: params.roofType === 'gable' ? 'gable' : 'single',
+          roofMaterial: params.roofMaterial,
+        };
+        const result = await calculateCanopyCost(projectParams as any);
+        setCosts(result);
+      } catch (error) {
+        console.error('Error loading costs:', error);
+      }
+    };
+    loadCost();
+  }, [params]);
 
   // Проверка ориентации экрана
   useEffect(() => {
@@ -598,14 +499,6 @@ useEffect(() => {
     };
   }, [isMobile]);
 
-  const [isCostModalOpen, setIsCostModalOpen] = useState(false);
-  const [saveModalOpen, setSaveModalOpen] = useState(false);
-  const [projectName, setProjectName] = useState('');
-  const [screenshot, setScreenshot] = useState<string | null>(null);
-  const [isTakingScreenshot, setIsTakingScreenshot] = useState(false);
-  const printRef = useRef<HTMLDivElement>(null);
-  const costs = calculateCost(params);
-
   const handleExport = (format: string) => {
     if (!sceneRef.current) return;
     
@@ -618,132 +511,124 @@ useEffect(() => {
     }
   };
 
-const handlePrint = async () => {
-  setIsTakingScreenshot(true);
+  const handlePrint = async () => {
+    setIsTakingScreenshot(true);
 
-  try {
-    // Ждем завершения рендеринга Three.js
-    await new Promise(resolve => requestAnimationFrame(resolve));
-    
-    // Делаем скриншот canvas
-    const canvas = canvasRef.current;
-    if (!canvas) {
-      console.error('Canvas не найден');
+    try {
+      await new Promise(resolve => requestAnimationFrame(resolve));
+      
+      const canvas = canvasRef.current;
+      if (!canvas) {
+        console.error('Canvas не найден');
+        return;
+      }
+
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = canvas.width;
+      tempCanvas.height = canvas.height;
+      const ctx = tempCanvas.getContext('2d');
+      if (!ctx) return;
+      
+      ctx.fillStyle = 'white';
+      ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+      ctx.drawImage(canvas, 0, 0);
+
+      const screenshot = tempCanvas.toDataURL('image/jpeg', 0.9);
+      setScreenshot(screenshot);
+
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) return;
+
+      const printContent = printRef.current?.innerHTML;
+      if (!printContent) return;
+
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>Проект навеса</title>
+            <style>
+              @page { size: A4; margin: 10mm; }
+              body { font-family: Arial; padding: 20px; }
+              img { max-width: 100%; height: auto; margin: 20px 0; }
+              table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+              th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+              th { background-color: #f2f2f2; }
+            </style>
+          </head>
+          <body>
+            ${printContent}
+            <script>
+              setTimeout(() => {
+                window.print();
+                window.close();
+              }, 500);
+            <\/script>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+
+    } catch (error) {
+      console.error('Ошибка:', error);
+    } finally {
+      setIsTakingScreenshot(false);
+    }
+  };
+
+  const handleSaveProject = async () => {
+    if (!currentUser) {
+      alert('Для сохранения проекта необходимо войти в систему');
+      navigate('/login');
       return;
     }
 
-    // Создаем временный canvas для гарантированного захвата
-    const tempCanvas = document.createElement('canvas');
-    tempCanvas.width = canvas.width;
-    tempCanvas.height = canvas.height;
-    const ctx = tempCanvas.getContext('2d');
-    if (!ctx) return;
-    
-    // Заливаем белым фоном (на случай прозрачности)
-    ctx.fillStyle = 'white';
-    ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
-    ctx.drawImage(canvas, 0, 0);
+    if (!projectName.trim()) {
+      alert('Пожалуйста, укажите название проекта');
+      return;
+    }
 
-    // Конвертируем в Data URL (сжатый PNG)
-    const screenshot = tempCanvas.toDataURL('image/jpeg', 0.9); // JPEG для уменьшения размера
-    setScreenshot(screenshot);
+    try {
+      if (!costs) {
+        alert('Цены ещё не загружены, попробуйте ещё раз');
+        return;
+      }
 
-    // Ждем обновления состояния React
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    // Открываем окно печати
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) return;
-
-    // Копируем HTML для печати
-    const printContent = printRef.current?.innerHTML;
-    if (!printContent) return;
-
-    // Вставляем стили и контент
-    printWindow.document.write(`
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>Проект навеса</title>
-          <style>
-            @page { size: A4; margin: 10mm; }
-            body { font-family: Arial; padding: 20px; }
-            img { max-width: 100%; height: auto; margin: 20px 0; }
-            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-            th { background-color: #f2f2f2; }
-          </style>
-        </head>
-        <body>
-          ${printContent}
-          <script>
-            setTimeout(() => {
-              window.print();
-              window.close();
-            }, 500);
-          </script>
-        </body>
-      </html>
-    `);
-    printWindow.document.close();
-
-  } catch (error) {
-    console.error('Ошибка:', error);
-  } finally {
-    setIsTakingScreenshot(false);
-  }
-};
-
-const handleSaveProject = async () => {
-  if (!currentUser) {
-    alert('Для сохранения проекта необходимо войти в систему');
-    navigate('/login');
-    return;
-  }
-
-  if (!projectName.trim()) {
-    alert('Пожалуйста, укажите название проекта');
-    return;
-  }
-
-  try {
-    // Рассчитываем стоимость перед сохранением
-    const costs = calculateCost(params);
-    
-    // Создаем объект проекта с расчетами
-    const projectData = {
-      ...params,
-      costCalculation: {
-        materials: {
-          roof: costs.roofMaterial.cost,
-          frame: costs.tube.cost,
-          foundation: costs.foundation.cost,
-          fasteners: costs.screws.cost
+      const projectData = {
+        ...params,
+        costCalculation: {
+          materials: {
+            roof: costs.roof?.cost || 0,
+            frame: costs.frame?.cost || 0,
+            foundation: costs.foundation?.cost || 0,
+            fasteners: costs.fasteners?.cost || 0
+          },
+          works: {
+            foundation: costs.foundation?.work || 0,
+            roofInstallation: costs.roofWork?.cost || 0,
+            frameAssembly: costs.frameWork?.cost || 0,
+            painting: costs.painting?.cost || 0
+          },
+          totalMaterials: (costs.roof?.cost || 0) + (costs.frame?.cost || 0) + 
+                         (costs.foundation?.cost || 0) + (costs.fasteners?.cost || 0),
+          totalWorks: (costs.foundation?.work || 0) + (costs.roofWork?.cost || 0) + 
+                     (costs.frameWork?.cost || 0) + (costs.painting?.cost || 0),
+          totalAmount: costs.totalAmount || 0
         },
-        works: {
-          foundation: costs.foundation.work,
-          roofInstallation: costs.roofWork.cost,
-          frameAssembly: costs.frameWork.cost,
-          painting: costs.painting.cost
-        },
-        totalMaterials: costs.roofMaterial.cost + costs.tube.cost + 
-                       costs.foundation.cost + costs.screws.cost,
-        totalWorks: costs.foundation.work + costs.roofWork.cost + 
-                   costs.frameWork.cost + costs.painting.cost,
-        totalAmount: costs.totalCost
-      },
-      totalAmount: costs.totalCost
-    };
+        totalAmount: costs.totalAmount || 0
+      };
 
-    await saveProject(projectName, projectData, 'canopy');
-    setProjectName('');
-    setSaveModalOpen(false);
-    alert('Проект успешно сохранен в вашем аккаунте!');
-  } catch (error) {
-    console.error('Ошибка при сохранении проекта:', error);
-    alert('Не удалось сохранить проект. Попробуйте снова.');
-  }
-};
+      await saveProject(projectName, projectData, 'canopy');
+      setProjectName('');
+      setSaveModalOpen(false);
+      alert('Проект успешно сохранен в вашем аккаунте!');
+    } catch (error) {
+      console.error('Ошибка при сохранении проекта:', error);
+      alert('Не удалось сохранить проект. Попробуйте снова.');
+    }
+  };
 
   const handleParamChange = (name: keyof CanopyParams, value: any) => {
     setParams(prev => ({ ...prev, [name]: value }));
@@ -1061,8 +946,6 @@ const handleSaveProject = async () => {
 		  </CheckboxContainer>
 		</ControlSection>
 		
-
-
         <ControlSection>
           <SectionTitle>Фон и окружение</SectionTitle>
           <BackgroundControls>
@@ -1141,8 +1024,34 @@ const handleSaveProject = async () => {
             <pointLight position={[params.width * 2, params.height * 3, params.length * 2]} intensity={1} />
             
             <Pillars params={params} />
+			<LongitudinalBeams params={params} />
             <Foundations params={params} />
-            <Trusses params={params} />
+
+			{/* Рендеринг ферм */}
+			{params.roofType === 'arch' && params.trussType === 'arched_narrow' ? (
+			  (() => {
+				const trussPositions: number[] = [];
+				const step = params.length / (params.trussCount - 1);
+				for (let i = 0; i < params.trussCount; i++) {
+				  trussPositions.push(-params.length / 2 + (i * step));
+				}
+				
+				return trussPositions.map((zPos, index) => (
+				  <ArchedTruss
+					key={`arch-truss-${index}`}
+					params={params}
+					positionZ={zPos}
+					isLast={index === trussPositions.length - 1}
+					nextPositionZ={trussPositions[index + 1]}
+					allPositions={trussPositions}
+					trussIndex={index}
+				  />
+				));
+			  })()
+			) : (
+			  <Trusses params={params} />
+			)}
+
             <Lathing params={params} />
             <RoofCover params={params} />
             
@@ -1153,9 +1062,6 @@ const handleSaveProject = async () => {
             />
           </Canvas>
         </ErrorBoundary>
-
-        {/* Кнопки действий - удалены, теперь только в 3 точках */}
-
       </ModelView>
 
       <SaveProjectModal />
@@ -1220,13 +1126,9 @@ const handleSaveProject = async () => {
             Закрыть
 		  </button>
 		</div>
-
-
-
       </Modal>
     </Container>
 	</>
-
   );
 };
 
