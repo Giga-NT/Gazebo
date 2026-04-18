@@ -73,14 +73,6 @@ function App() {
         }
       />
 
-      // <Route
-        // path="/bania-barrel"
-        // element={
-          // <ProtectedRoute>
-            // <BaniaBarrelModel />
-          // </ProtectedRoute>
-        // }
-      // />
 
 	  <Route path="/admin/prices" element={
 	    <AdminRoute>
