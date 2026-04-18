@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { DemoScene } from '../components/DemoScene/DemoScene';  // ← исправлено
+import { DemoScene } from '../components/DemoScene/DemoScene';
 import './LoginPage.css';
 
 // Импорт логотипа
@@ -25,6 +25,7 @@ export const LoginPage = () => {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [activeModel, setActiveModel] = useState<'canopy' | 'gazebo' | 'greenhouse'>('canopy');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,8 +50,17 @@ export const LoginPage = () => {
     }));
   };
 
+
+
   return (
     <div className="login-page">
+      {/* Animated Background */}
+      <div className="login-background">
+        <div className="gradient-orb gradient-orb--1"></div>
+        <div className="gradient-orb gradient-orb--2"></div>
+        <div className="gradient-orb gradient-orb--3"></div>
+      </div>
+
       {/* Header */}
       <header className="login-header">
         <div className="container">
@@ -63,8 +73,8 @@ export const LoginPage = () => {
               </div>
             </div>
             <div className="login-header__contact">
-              <a href="tel:+79021565256" className="login-header__phone">
-                +7 (902) 156-52-56
+              <a href="tel:+79827467272" className="login-header__phone">
+                +7 (982) 746-72-72
               </a>
               <a href="mailto:info@giga-nt.ru" className="login-header__email">
                 info@giga-nt.ru
@@ -190,7 +200,7 @@ export const LoginPage = () => {
 
               <div className="login-card__benefits">
                 <p className="login-card__benefits-title">
-                  После оформления подписки вы получите:
+                  После регистрации вы получите:
                 </p>
                 <ul className="benefits-list">
                   <li className="benefits-list__item">
@@ -207,105 +217,16 @@ export const LoginPage = () => {
                   </li>
                 </ul>
               </div>
-
-              <div className="login-card__info-block">
-                <h3 className="login-card__info-title">Как это работает:</h3>
-                <div className="info-steps">
-                  <div className="info-step">
-                    <div className="info-step__number">1</div>
-                    <div className="info-step__content">
-                      <h4 className="info-step__title">Клиент создаёт проект</h4>
-                      <p className="info-step__description">
-                        В конфигураторе клиент создаёт 3D-модель навеса, беседки или теплицы 
-                        с точными размерами и подбором материалов
-                      </p>
-                    </div>
-                  </div>
-                  <div className="info-step">
-                    <div className="info-step__number">2</div>
-                    <div className="info-step__content">
-                      <h4 className="info-step__title">Система считает стоимость</h4>
-                      <p className="info-step__description">
-                        Автоматически рассчитывается стоимость материалов и работ, 
-                        формируется детальная смета
-                      </p>
-                    </div>
-                  </div>
-                  <div className="info-step">
-                    <div className="info-step__number">3</div>
-                    <div className="info-step__content">
-                      <h4 className="info-step__title">Вы получаете заявку</h4>
-                      <p className="info-step__description">
-                        Менеджер связывается с клиентом, уточняет детали, согласовывает сроки 
-                        и заключает договор
-                      </p>
-                    </div>
-                  </div>
-                  <div className="info-step">
-                    <div className="info-step__number">4</div>
-                    <div className="info-step__content">
-                      <h4 className="info-step__title">Производство и монтаж</h4>
-                      <p className="info-step__description">
-                        Изготавливаете конструкцию, доставляете на объект, выполняете монтаж 
-                        под ключ
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="login-card__info-block login-card__info-block--highlight">
-                <h3 className="login-card__info-title">Возможности для вашего бизнеса:</h3>
-                <ul className="deliverables-list">
-                  <li className="deliverables-list__item">
-                    <span className="deliverables-list__icon">💼</span>
-                    <div>
-                      <strong>3D-визуализация для клиентов</strong>
-                      <p>Наглядно показывайте проекты — увеличьте конверсию в продажу</p>
-                    </div>
-                  </li>
-                  <li className="deliverables-list__item">
-                    <span className="deliverables-list__icon">💰</span>
-                    <div>
-                      <strong>Автоматический расчёт стоимости</strong>
-                      <p>Мгновенная смета по параметрам клиента — экономьте время менеджеров</p>
-                    </div>
-                  </li>
-                  <li className="deliverables-list__item">
-                    <span className="deliverables-list__icon">📦</span>
-                    <div>
-                      <strong>Расчёт материалов</strong>
-                      <p>Точный расход металла, поликарбоната, крепежа — без пересорта</p>
-                    </div>
-                  </li>
-                  <li className="deliverables-list__item">
-                    <span className="deliverables-list__icon">📱</span>
-                    <div>
-                      <strong>База проектов клиентов</strong>
-                      <p>Сохраняйте все проекты в облаке — доступ из любой точки</p>
-                    </div>
-                  </li>
-                  <li className="deliverables-list__item">
-                    <span className="deliverables-list__icon">📄</span>
-                    <div>
-                      <strong>Экспорт в PDF</strong>
-                      <p>Печатайте сметы и проекты для согласования с заказчиком</p>
-                    </div>
-                  </li>
-                  <li className="deliverables-list__item">
-                    <span className="deliverables-list__icon">🚀</span>
-                    <div>
-                      <strong>Ускорение продаж</strong>
-                      <p>Клиент видит проект сразу — быстрее принимает решение о покупке</p>
-                    </div>
-                  </li>
-                </ul>
-              </div>
             </div>
 
             {/* 3D Demo Scene */}
             <div className="demo-panel">
-              <DemoScene />
+
+              
+              <div className="demo-scene-wrapper">
+                <DemoScene />
+              </div>
+              
               <div className="demo-panel__content">
                 <h2 className="demo-panel__title">
                   Создавайте проекты любой сложности
