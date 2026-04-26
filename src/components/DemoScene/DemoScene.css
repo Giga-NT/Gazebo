@@ -225,3 +225,81 @@
     transition: none;
   }
 }
+
+
+/* Полноэкранный режим */
+.demo-scene__canvas-container:fullscreen {
+  width: 100vw;
+  height: 100vh;
+}
+
+.demo-scene__canvas-container:fullscreen canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Кнопка полноэкранного режима */
+.demo-scene__fullscreen-btn {
+  margin-left: 8px;
+  border-left: 1px solid rgba(255,255,255,0.2);
+}
+
+.demo-scene__fullscreen-btn:hover {
+  background: rgba(0, 168, 150, 0.2);
+}
+
+/* Для мобильных устройств */
+@media (max-width: 768px) {
+  .demo-scene__fullscreen-btn .demo-scene__btn-label {
+    display: none;
+  }
+  
+  .demo-scene__fullscreen-btn {
+    padding: 10px 12px;
+  }
+}
+
+/* Адаптация панели управления в полноэкранном режиме */
+:fullscreen .demo-scene__controls,
+:fullscreen .demo-scene__hint {
+  z-index: 1001;
+}
+
+:fullscreen .demo-scene {
+  background: #000;
+}
+
+.demo-scene {
+  position: relative;
+  width: 100%;
+  height: 500px;
+  background: linear-gradient(135deg, #f0f2f5 0%, #e4e8ec 100%);
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  margin-bottom: 32px;
+}
+
+/* Полноэкранный режим */
+.demo-scene__canvas-container:fullscreen {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+}
+
+.demo-scene__canvas-container:fullscreen canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.demo-scene__canvas-container:fullscreen + .demo-scene__controls,
+.demo-scene__canvas-container:fullscreen ~ .demo-scene__controls {
+  z-index: 1001;
+}
+
+/* Убедимся, что панель управления видна в полноэкранном режиме */
+:fullscreen .demo-scene__controls,
+:fullscreen .demo-scene__hint,
+:fullscreen div[style*="position: absolute"] {
+  z-index: 1000 !important;
+}

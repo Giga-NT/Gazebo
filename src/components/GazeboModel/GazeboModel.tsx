@@ -23,6 +23,8 @@ import GazeboRoofCover from '../Gazebo/GazeboRoofCover';
 import GazeboGables from '../Gazebo/GazeboGables';
 import { calculateGazeboCost } from '../../utils/gazeboCostCalculation';
 import { getGazeboPrices } from '../../services/priceService';
+import SEO from '../SEO';  // ← ДОБАВЬТЕ ЭТУ СТРОКУ
+
 
 // ===== СТИЛИ ДЛЯ МОБИЛЬНОГО МЕНЮ С АККОРДЕОНОМ =====
 const MobileMenuButton = styled.button<{ $isOpen: boolean }>`
@@ -478,8 +480,21 @@ const MobileGazeboControls: React.FC<{
                 checked={params.showRoofCover}
                 onChange={(e) => onChange('showRoofCover', e.target.checked)}
               />
-              <span style={{ fontSize: '0.9rem' }}>Показать поликарбонатное покрытие</span>
+              <span style={{ fontSize: '0.9rem' }}>Показать кровельное покрытие</span>
             </label>
+          </div>
+          {/* ДОБАВЛЕН ВЫБОР МАТЕРИАЛА КРОВЛИ */}
+          <div>
+            <label style={{ display: 'block', marginBottom: '6px', fontSize: '0.9rem', fontWeight: 500 }}>Материал кровли</label>
+            <select
+              value={(params as any).roofMaterial || 'metal'}
+              onChange={(e) => onChange('roofMaterial' as any, e.target.value)}
+              style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ccc' }}
+            >
+              <option value="metal">🔩 Профлист (металл)</option>
+              <option value="tile">🧱 Черепица</option>
+              <option value="polycarbonate">✨ Поликарбонат</option>
+            </select>
           </div>
         </div>
       </AccordionItem>
@@ -621,7 +636,10 @@ const GazeboModel: React.FC = () => {
   const searchParams = new URLSearchParams(location.search);
   const projectId = searchParams.get('project');
 
-  const [params, setParams] = useState<GazeboParams>(initialGazeboParams);
+  const [params, setParams] = useState<GazeboParams>({
+    ...initialGazeboParams,
+    roofMaterial: 'metal' // Добавляем значение по умолчанию
+  });
   const [saveModalOpen, setSaveModalOpen] = useState(false);
   const [projectName, setProjectName] = useState('');
   const [isCostModalOpen, setIsCostModalOpen] = useState(false);
@@ -661,17 +679,15 @@ const GazeboModel: React.FC = () => {
     };
   }, [isMobile, isMobileMenuOpen]);
 
+  const [costData, setCostData] = useState<any>(null);
 
-
-	const [costData, setCostData] = useState<any>(null);
-
-	useEffect(() => {
-	  const loadCost = async () => {
-		const result = await calculateGazeboCost(params);
-		setCostData(result);
-	  };
-	  loadCost();
-	}, [params]);
+  useEffect(() => {
+    const loadCost = async () => {
+      const result = await calculateGazeboCost(params);
+      setCostData(result);
+    };
+    loadCost();
+  }, [params]);
 
   // Загрузка проекта из БД
   useEffect(() => {
@@ -887,6 +903,10 @@ const GazeboModel: React.FC = () => {
           params.materialType === 'wood' ? 'Дерево' :
           params.materialType === 'metal' ? 'Металл' : 'Комбинированный'
         }</p>
+        <p>Материал кровли: {
+          (params as any).roofMaterial === 'metal' ? 'Профлист' :
+          (params as any).roofMaterial === 'tile' ? 'Черепица' : 'Поликарбонат'
+        }</p>
         <p>Фундамент: {
           params.foundationType === 'wood' ? 'Деревянный' :
           params.foundationType === 'concrete' ? 'Бетонный' : 'Свайный'
@@ -908,60 +928,60 @@ const GazeboModel: React.FC = () => {
         </thead>
         <tbody>
           <PrintTableRow>
-            <PrintTableCell>{costData.frame.name}</PrintTableCell>
-            <PrintTableCell>{Math.round(costData.frame.cost).toLocaleString('ru-RU')} ₽</PrintTableCell>
+            <PrintTableCell>{costData?.frame?.name || 'Каркас'}</PrintTableCell>
+            <PrintTableCell>{Math.round(costData?.frame?.cost || 0).toLocaleString('ru-RU')} ₽</PrintTableCell>
             <PrintTableCell>-</PrintTableCell>
-            <PrintTableCell>{costData.frame.details}</PrintTableCell>
+            <PrintTableCell>{costData?.frame?.details || ''}</PrintTableCell>
           </PrintTableRow>
           <PrintTableRow>
-            <PrintTableCell>{costData.roof.name}</PrintTableCell>
-            <PrintTableCell>{Math.round(costData.roof.cost).toLocaleString('ru-RU')} ₽</PrintTableCell>
+            <PrintTableCell>{costData?.roof?.name || 'Кровля'}</PrintTableCell>
+            <PrintTableCell>{Math.round(costData?.roof?.cost || 0).toLocaleString('ru-RU')} ₽</PrintTableCell>
             <PrintTableCell>-</PrintTableCell>
-            <PrintTableCell>{costData.roof.details}</PrintTableCell>
+            <PrintTableCell>{costData?.roof?.details || ''}</PrintTableCell>
           </PrintTableRow>
           <PrintTableRow>
-            <PrintTableCell>{costData.foundation.name}</PrintTableCell>
-            <PrintTableCell>{Math.round(costData.foundation.cost).toLocaleString('ru-RU')} ₽</PrintTableCell>
-            <PrintTableCell>{Math.round(costData.foundation.work).toLocaleString('ru-RU')} ₽</PrintTableCell>
-            <PrintTableCell>{costData.foundation.details}</PrintTableCell>
+            <PrintTableCell>{costData?.foundation?.name || 'Фундамент'}</PrintTableCell>
+            <PrintTableCell>{Math.round(costData?.foundation?.cost || 0).toLocaleString('ru-RU')} ₽</PrintTableCell>
+            <PrintTableCell>{Math.round(costData?.foundation?.work || 0).toLocaleString('ru-RU')} ₽</PrintTableCell>
+            <PrintTableCell>{costData?.foundation?.details || ''}</PrintTableCell>
           </PrintTableRow>
           <PrintTableRow>
-            <PrintTableCell>{costData.floor.name}</PrintTableCell>
-            <PrintTableCell>{Math.round(costData.floor.cost).toLocaleString('ru-RU')} ₽</PrintTableCell>
-            <PrintTableCell>{Math.round(costData.floor.work).toLocaleString('ru-RU')} ₽</PrintTableCell>
-            <PrintTableCell>{costData.floor.details}</PrintTableCell>
+            <PrintTableCell>{costData?.floor?.name || 'Пол'}</PrintTableCell>
+            <PrintTableCell>{Math.round(costData?.floor?.cost || 0).toLocaleString('ru-RU')} ₽</PrintTableCell>
+            <PrintTableCell>{Math.round(costData?.floor?.work || 0).toLocaleString('ru-RU')} ₽</PrintTableCell>
+            <PrintTableCell>{costData?.floor?.details || ''}</PrintTableCell>
           </PrintTableRow>
           {params.hasFurniture && (
             <PrintTableRow>
-              <PrintTableCell>{costData.furniture.name}</PrintTableCell>
-              <PrintTableCell>{Math.round(costData.furniture.cost).toLocaleString('ru-RU')} ₽</PrintTableCell>
-              <PrintTableCell>{Math.round(costData.furniture.work).toLocaleString('ru-RU')} ₽</PrintTableCell>
+              <PrintTableCell>{costData?.furniture?.name || 'Мебель'}</PrintTableCell>
+              <PrintTableCell>{Math.round(costData?.furniture?.cost || 0).toLocaleString('ru-RU')} ₽</PrintTableCell>
+              <PrintTableCell>{Math.round(costData?.furniture?.work || 0).toLocaleString('ru-RU')} ₽</PrintTableCell>
               <PrintTableCell>
-                <pre style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{costData.furniture.details}</pre>
+                <pre style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{costData?.furniture?.details || ''}</pre>
               </PrintTableCell>
             </PrintTableRow>
           )}
           <PrintTotalRow>
             <PrintTableCell colSpan={2}>
               Итого материалы: {Math.round(
-                costData.frame.cost +
-                costData.roof.cost +
-                costData.foundation.cost +
-                costData.floor.cost +
-                (params.hasFurniture ? costData.furniture.cost : 0)
+                (costData?.frame?.cost || 0) +
+                (costData?.roof?.cost || 0) +
+                (costData?.foundation?.cost || 0) +
+                (costData?.floor?.cost || 0) +
+                (params.hasFurniture ? (costData?.furniture?.cost || 0) : 0)
               ).toLocaleString('ru-RU')} ₽
             </PrintTableCell>
             <PrintTableCell colSpan={2}>
               Итого работы: {Math.round(
-                costData.foundation.work +
-                costData.floor.work +
-                (params.hasFurniture ? costData.furniture.work : 0)
+                (costData?.foundation?.work || 0) +
+                (costData?.floor?.work || 0) +
+                (params.hasFurniture ? (costData?.furniture?.work || 0) : 0)
               ).toLocaleString('ru-RU')} ₽
             </PrintTableCell>
           </PrintTotalRow>
           <PrintTotalRow>
             <PrintTableCell colSpan={4}>
-              Общая стоимость: {Math.round(costData.totalCost).toLocaleString('ru-RU')} ₽
+              Общая стоимость: {Math.round(costData?.totalCost || 0).toLocaleString('ru-RU')} ₽
             </PrintTableCell>
           </PrintTotalRow>
         </tbody>
@@ -988,6 +1008,15 @@ const GazeboModel: React.FC = () => {
 
   return (
     <>
+      {/* ← СЮДА ДОБАВЬТЕ SEO */}
+      <SEO 
+        title="3D конструктор беседки | Создайте беседку своей мечты"
+        description="Создайте 3D модель беседки под ключ. ✅ Двускатные, арочные, односкатные крыши. ✅ Выбор материалов и цветов. ✅ Расчет стоимости онлайн. ✅ Визуализация в реальном времени."
+        keywords="конструктор беседок, беседка под ключ, 3D модель беседки, арочная беседка, двускатная беседка, беседка с мангалом"
+        canonicalUrl="/gazebo"
+        ogType="website"
+      />
+      
       {/* Orientation Alert - блокировка портретного режима */}
       {showOrientationAlert && (
         <div className="warehouse-orientation-alert" style={{
@@ -1196,7 +1225,15 @@ const GazeboModel: React.FC = () => {
               <>
                 <GazeboTrusses params={params} />
                 <GazeboLathing params={params} />
-                {params.showRoofCover && <GazeboRoofCover params={params} offsetY={0.05} />}
+                {params.showRoofCover && (
+                  <GazeboRoofCover 
+                    params={{
+                      ...params,
+                      roofMaterial: (params as any).roofMaterial || 'metal'
+                    }} 
+                    offsetY={0.05} 
+                  />
+                )}
                 {params.showGables && <GazeboGables params={params} />}
               </>
             )}
@@ -1205,7 +1242,14 @@ const GazeboModel: React.FC = () => {
               <>
                 <GazeboTrusses params={params} />
                 <GazeboLathing params={params} />
-                {params.showRoofCover && <GazeboRoofCover params={params} />}
+                {params.showRoofCover && (
+                  <GazeboRoofCover 
+                    params={{
+                      ...params,
+                      roofMaterial: (params as any).roofMaterial || 'metal'
+                    }} 
+                  />
+                )}
                 {params.showGables && <GazeboGables params={params} />}
               </>
             )}
@@ -1214,10 +1258,18 @@ const GazeboModel: React.FC = () => {
               <>
                 <GazeboTrusses params={params} />
                 <GazeboLathing params={params} />
-                {params.showRoofCover && <GazeboRoofCover params={params} />}
+                {params.showRoofCover && (
+                  <GazeboRoofCover 
+                    params={{
+                      ...params,
+                      roofMaterial: (params as any).roofMaterial || 'metal'
+                    }} 
+                  />
+                )}
                 {params.showGables && <GazeboGables params={params} />}
               </>
             )}
+            
             <GazeboFoundation params={params} />
             {params.hasFurniture && <GazeboFurniture params={params} />}
 
@@ -1231,9 +1283,6 @@ const GazeboModel: React.FC = () => {
             />
           </Canvas>
         </ErrorBoundary>
-
-        {/* Кнопки действий - удалены, теперь только в 3 точках */}
-
       </ModelView>
 
       <SaveProjectModal />
@@ -1297,7 +1346,7 @@ const GazeboModel: React.FC = () => {
       </Modal>
       
     </Container>
-	</>
+  </>
   );
 };
 

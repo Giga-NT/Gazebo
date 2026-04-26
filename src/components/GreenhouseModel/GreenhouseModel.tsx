@@ -16,6 +16,8 @@ import ArchedRoof from '../Greenhouse/ArchedRoof';
 import GableRoof from '../Greenhouse/GableRoof';
 import GreenhouseWalls from '../Greenhouse/GreenhouseWalls';
 import GreenhouseFoundation from '../Greenhouse/GreenhouseFoundation';
+import SEO from '../SEO';  // ← ДОБАВЬТЕ ЭТУ СТРОКУ
+import { GreenhouseDemo } from '../Greenhouse/GreenhouseDemo';
 
 interface MaterialPrices {
   material: number;
@@ -307,6 +309,8 @@ const GreenhouseModel: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isActionsOpen, setIsActionsOpen] = useState(false);
   const [showOrientationAlert, setShowOrientationAlert] = useState(false);
+  const isAuthenticated = !!currentUser;
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   const isMobile = useIsMobile();
 
@@ -400,72 +404,78 @@ useEffect(() => {
     }
   };
 
-  const handlePrint = async () => {
-    setIsTakingScreenshot(true);
+const handlePrint = async () => {
+  // Проверка авторизации
+  if (!isAuthenticated) {
+    setShowLoginModal(true);
+    return;
+  }
 
-    try {
-      await new Promise(resolve => requestAnimationFrame(resolve));
-      
-      const canvas = canvasRef.current;
-      if (!canvas) {
-        console.error('Canvas не найден');
-        return;
-      }
+  setIsTakingScreenshot(true);
 
-      const tempCanvas = document.createElement('canvas');
-      tempCanvas.width = canvas.width;
-      tempCanvas.height = canvas.height;
-      const ctx = tempCanvas.getContext('2d');
-      if (!ctx) return;
-      
-      ctx.fillStyle = 'white';
-      ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
-      ctx.drawImage(canvas, 0, 0);
-
-      const screenshot = tempCanvas.toDataURL('image/jpeg', 0.9);
-      setScreenshot(screenshot);
-
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      const printWindow = window.open('', '_blank');
-      if (!printWindow) return;
-
-      const printContent = printRef.current?.innerHTML;
-      if (!printContent) return;
-
-      printWindow.document.write(`
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <title>Проект теплицы</title>
-            <style>
-              @page { size: A4; margin: 10mm; }
-              body { font-family: Arial; padding: 20px; }
-              img { max-width: 100%; height: auto; margin: 20px 0; }
-              table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-              th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-              th { background-color: #f2f2f2; }
-            </style>
-          </head>
-          <body>
-            ${printContent}
-            <script>
-              setTimeout(() => {
-                window.print();
-                window.close();
-              }, 500);
-            </script>
-          </body>
-        </html>
-      `);
-      printWindow.document.close();
-
-    } catch (error) {
-      console.error('Ошибка:', error);
-    } finally {
-      setIsTakingScreenshot(false);
+  try {
+    await new Promise(resolve => requestAnimationFrame(resolve));
+    
+    const canvas = canvasRef.current;
+    if (!canvas) {
+      console.error('Canvas не найден');
+      return;
     }
-  };
+
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = canvas.width;
+    tempCanvas.height = canvas.height;
+    const ctx = tempCanvas.getContext('2d');
+    if (!ctx) return;
+    
+    ctx.fillStyle = 'white';
+    ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+    ctx.drawImage(canvas, 0, 0);
+
+    const screenshot = tempCanvas.toDataURL('image/jpeg', 0.9);
+    setScreenshot(screenshot);
+
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+
+    const printContent = printRef.current?.innerHTML;
+    if (!printContent) return;
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Проект теплицы</title>
+          <style>
+            @page { size: A4; margin: 10mm; }
+            body { font-family: Arial; padding: 20px; }
+            img { max-width: 100%; height: auto; margin: 20px 0; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background-color: #f2f2f2; }
+          </style>
+        </head>
+        <body>
+          ${printContent}
+          <script>
+            setTimeout(() => {
+              window.print();
+              window.close();
+            }, 500);
+          <\/script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+
+  } catch (error) {
+    console.error('Ошибка:', error);
+  } finally {
+    setIsTakingScreenshot(false);
+  }
+};
 
   const SaveProjectModal = () => (
     <Modal
@@ -661,24 +671,148 @@ useEffect(() => {
     );
   });
 
-  return (
-    <>
-      {/* Orientation Alert - блокировка портретного режима */}
-      {showOrientationAlert && (
-        <div className="greenhouse-orientation-alert">
-          <div style={{ fontSize: '80px', marginBottom: '30px', animation: 'rotate 2s ease-in-out infinite' }}>📱</div>
-          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>Переверните устройство</h2>
-          <p style={{ fontSize: '16px', lineHeight: '1.6', maxWidth: '400px', opacity: '0.9' }}>
-            Для комфортной работы пожалуйста переверните устройство в горизонтальное положение
-          </p>
-          <p style={{ marginTop: '30px', fontSize: '14px', opacity: '0.7' }}>
-            Конфигуратор работает в ландшафтном режиме
-          </p>
-        </div>
-      )}
+// Модальное окно входа (добавьте после SaveProjectModal)
+const LoginModal = () => (
+  <Modal
+    isOpen={showLoginModal}
+    onRequestClose={() => setShowLoginModal(false)}
+    style={{
+      overlay: { backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
+      content: { position: 'relative', inset: 'auto', width: '350px', maxWidth: '90%', padding: '30px', borderRadius: '16px', border: 'none', textAlign: 'center' }
+    }}
+  >
+    <div style={{ fontSize: '48px', marginBottom: '16px' }}>🔐</div>
+    <h3 style={{ margin: '0 0 8px', color: '#2c3e50' }}>Требуется регистрация</h3>
+    <p style={{ color: '#666', marginBottom: '24px' }}>Зарегистрируйтесь, чтобы сохранять проекты и получать детальные расчёты</p>
+    <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+      <button onClick={() => navigate('/login')} style={{ padding: '10px 20px', background: '#3498db', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>Войти</button>
+      <button onClick={() => navigate('/register')} style={{ padding: '10px 20px', background: '#2ecc71', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>Регистрация</button>
+    </div>
+    <button onClick={() => setShowLoginModal(false)} style={{ marginTop: '20px', background: 'none', border: 'none', color: '#999', cursor: 'pointer' }}>Позже</button>
+  </Modal>
+);
 
-      <Container $isMobile={isMobile}>
-      {/* Burger Button - слева (только в ландшафте и без alert) */}
+return (
+  <>
+    <SEO 
+      title="3D конструктор теплицы | Расчет теплицы из поликарбоната"
+      description="Спроектируйте теплицу из поликарбоната в 3D. ✅ Визуализация в реальном времени. ✅ Бесплатная демо-версия. ✅ Регистрация для сохранения проектов."
+      keywords="конструктор теплицы, теплица из поликарбоната, 3D модель теплицы"
+      canonicalUrl="/greenhouse"
+    />
+
+    {/* Демо-баннер для незарегистрированных */}
+    {!isAuthenticated && (
+      <div style={{
+        position: 'fixed',
+        top: '20px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        background: 'linear-gradient(135deg, #00a896, #008f7f)',
+        color: 'white',
+        padding: '10px 20px',
+        borderRadius: '40px',
+        display: 'flex',
+        gap: '16px',
+        alignItems: 'center',
+        zIndex: 200,
+        boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+        fontSize: '14px'
+      }}>
+        <span>🔓 Демо-режим</span>
+        <button onClick={() => navigate('/register')} style={{
+          background: 'white',
+          color: '#008f7f',
+          border: 'none',
+          padding: '6px 16px',
+          borderRadius: '30px',
+          cursor: 'pointer',
+          fontWeight: 'bold'
+        }}>Зарегистрироваться → Полный доступ</button>
+      </div>
+    )}
+
+    {/* Информационная панель для демо */}
+    {!isAuthenticated && (
+      <div style={{
+        position: 'fixed',
+        left: '20px',
+        bottom: '20px',
+        background: 'rgba(0,0,0,0.8)',
+        backdropFilter: 'blur(10px)',
+        color: 'white',
+        padding: '16px',
+        borderRadius: '16px',
+        maxWidth: '260px',
+        zIndex: 200,
+        fontSize: '13px'
+      }}>
+        <h3 style={{ margin: '0 0 8px', fontSize: '16px' }}>🌱 Демо-теплица</h3>
+        <p>📐 Размер: 3×4×2.5 м</p>
+        <p>🏗️ Тип: Арочная</p>
+        <p>🔧 Материал: Поликарбонат</p>
+        <button onClick={() => navigate('/register')} style={{
+          background: '#00a896',
+          border: 'none',
+          color: 'white',
+          padding: '8px 16px',
+          borderRadius: '8px',
+          marginTop: '12px',
+          cursor: 'pointer',
+          width: '100%'
+        }}>🔓 Получить полный доступ</button>
+        <ul style={{ margin: '12px 0 0 20px', padding: 0, fontSize: '12px' }}>
+          <li>✓ Менять размеры</li>
+          <li>✓ Рассчитать стоимость</li>
+          <li>✓ Сохранять проекты</li>
+        </ul>
+      </div>
+    )}
+
+    {/* Баннер авторизованного пользователя */}
+    {isAuthenticated && (
+      <div style={{
+        position: 'fixed',
+        top: '20px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        background: '#2ecc71',
+        color: 'white',
+        padding: '8px 20px',
+        borderRadius: '40px',
+        zIndex: 200,
+        fontSize: '14px',
+        display: 'flex',
+        gap: '12px'
+      }}>
+        <span>✅ Полный доступ</span>
+        <button onClick={() => { logout(); navigate('/login'); }} style={{
+          background: 'rgba(255,255,255,0.2)',
+          border: 'none',
+          color: 'white',
+          padding: '4px 12px',
+          borderRadius: '20px',
+          cursor: 'pointer'
+        }}>Выйти</button>
+      </div>
+    )}
+
+    {/* Блокировка портретного режима */}
+    {showOrientationAlert && (
+      <div className="greenhouse-orientation-alert">
+        <div style={{ fontSize: '80px', marginBottom: '30px', animation: 'rotate 2s ease-in-out infinite' }}>📱</div>
+        <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>Переверните устройство</h2>
+        <p style={{ fontSize: '16px', lineHeight: '1.6', maxWidth: '400px', opacity: '0.9' }}>
+          Для комфортной работы пожалуйста переверните устройство в горизонтальное положение
+        </p>
+        <p style={{ marginTop: '30px', fontSize: '14px', opacity: '0.7' }}>
+          Конфигуратор работает в ландшафтном режиме
+        </p>
+      </div>
+    )}
+
+    <Container $isMobile={isMobile}>
+      {/* Burger Button */}
       {!showOrientationAlert && (
         <button
           className="greenhouse-burger-btn"
@@ -689,7 +823,7 @@ useEffect(() => {
         </button>
       )}
       
-      {/* Actions Button - справа (только в ландшафте и без alert) */}
+      {/* Actions Button */}
       {!showOrientationAlert && (
         <button
           className="greenhouse-actions-btn"
@@ -709,266 +843,190 @@ useEffect(() => {
         }}
       />
 
-      {/* Side Panel - слева с контролами */}
-      <div className={`greenhouse-side-panel ${isMenuOpen ? 'active' : ''}`}>
-        <div className="greenhouse-panel-header">
-          <h3 className="greenhouse-panel-title">🌱 Конструктор теплицы</h3>
-          <button
-            className="greenhouse-panel-close"
-            onClick={() => setIsMenuOpen(false)}
-            aria-label="Закрыть меню"
-          >
-            ✕
-          </button>
-        </div>
-        <div className="greenhouse-panel-content">
-          <GreenhouseControls
-            params={params}
-            onChange={handleParamChange}
-            ventsOpen={ventsOpen}
-            setVentsOpen={setVentsOpen}
-          />
-        </div>
-      </div>
-      
-      {/* Actions Panel - справа */}
-      <div className={`greenhouse-actions-panel ${isActionsOpen ? 'active' : ''}`}>
-        <div className="greenhouse-panel-header">
-          <h3 className="greenhouse-panel-title">Действия</h3>
-          <button
-            className="greenhouse-panel-close"
-            onClick={() => setIsActionsOpen(false)}
-            aria-label="Закрыть"
-          >
-            ✕
-          </button>
-        </div>
-        <div className="greenhouse-panel-content">
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      {/* Side Panel - слева с контролами (только для авторизованных) */}
+      {isAuthenticated && (
+        <div className={`greenhouse-side-panel ${isMenuOpen ? 'active' : ''}`}>
+          <div className="greenhouse-panel-header">
+            <h3 className="greenhouse-panel-title">🌱 Конструктор теплицы</h3>
             <button
-              onClick={() => setIsCostModalOpen(true)}
-              style={{
-                padding: '14px 18px',
-                backgroundColor: '#3498db',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontSize: '15px',
-                fontWeight: '600',
-                boxShadow: '0 4px 12px rgba(52, 152, 219, 0.3)',
-              }}
+              className="greenhouse-panel-close"
+              onClick={() => setIsMenuOpen(false)}
+              aria-label="Закрыть меню"
             >
-              💰 Детальный расчет
-            </button>
-            
-            <button
-              onClick={() => setSaveModalOpen(true)}
-              style={{
-                padding: '14px 18px',
-                backgroundColor: '#2ecc71',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontSize: '15px',
-                fontWeight: '600',
-                boxShadow: '0 4px 12px rgba(46, 204, 113, 0.3)',
-              }}
-            >
-              💾 Сохранить проект
-            </button>
-            
-            <button
-              onClick={() => setDoorsOpen(!doorsOpen)}
-              style={{
-                padding: '14px 18px',
-                backgroundColor: doorsOpen ? '#e67e22' : '#f39c12',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontSize: '15px',
-                fontWeight: '600',
-                boxShadow: '0 4px 12px rgba(243, 156, 18, 0.3)',
-              }}
-            >
-              {doorsOpen ? '🚪 Закрыть двери' : '🚪 Открыть двери'}
-            </button>
-            
-            <button
-              onClick={() => setVentsOpen(!ventsOpen)}
-              style={{
-                padding: '14px 18px',
-                backgroundColor: ventsOpen ? '#9b59b6' : '#8e44ad',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontSize: '15px',
-                fontWeight: '600',
-                boxShadow: '0 4px 12px rgba(142, 68, 173, 0.3)',
-              }}
-            >
-              {ventsOpen ? '💨 Закрыть форточки' : '💨 Открыть форточки'}
-            </button>
-            
-            <button
-              onClick={() => navigate('/dashboard')}
-              style={{
-                padding: '14px 18px',
-                backgroundColor: '#6c757d',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontSize: '15px',
-                fontWeight: '600',
-                boxShadow: '0 4px 12px rgba(108, 117, 125, 0.3)',
-              }}
-            >
-              📁 Личный кабинет
-            </button>
-            
-            <button
-              onClick={() => {
-                logout();
-                navigate('/login');
-              }}
-              style={{
-                padding: '14px 18px',
-                backgroundColor: '#e74c3c',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontSize: '15px',
-                fontWeight: '600',
-                boxShadow: '0 4px 12px rgba(231, 76, 60, 0.3)',
-              }}
-            >
-              🚪 Выйти
+              ✕
             </button>
           </div>
+          <div className="greenhouse-panel-content">
+            <GreenhouseControls
+              params={params}
+              onChange={handleParamChange}
+              ventsOpen={ventsOpen}
+              setVentsOpen={setVentsOpen}
+            />
+          </div>
         </div>
-      </div>
+      )}
+      
+      {/* Actions Panel - справа (только для авторизованных) */}
+      {isAuthenticated && (
+        <div className={`greenhouse-actions-panel ${isActionsOpen ? 'active' : ''}`}>
+          <div className="greenhouse-panel-header">
+            <h3 className="greenhouse-panel-title">Действия</h3>
+            <button
+              className="greenhouse-panel-close"
+              onClick={() => setIsActionsOpen(false)}
+              aria-label="Закрыть"
+            >
+              ✕
+            </button>
+          </div>
+          <div className="greenhouse-panel-content">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <button
+                onClick={() => setIsCostModalOpen(true)}
+                style={{
+                  padding: '14px 18px',
+                  backgroundColor: '#3498db',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontSize: '15px',
+                  fontWeight: '600',
+                }}
+              >
+                💰 Детальный расчет
+              </button>
+              
+              <button
+                onClick={() => setSaveModalOpen(true)}
+                style={{
+                  padding: '14px 18px',
+                  backgroundColor: '#2ecc71',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontSize: '15px',
+                  fontWeight: '600',
+                }}
+              >
+                💾 Сохранить проект
+              </button>
+              
+              <button
+                onClick={() => setDoorsOpen(!doorsOpen)}
+                style={{
+                  padding: '14px 18px',
+                  backgroundColor: doorsOpen ? '#e67e22' : '#f39c12',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontSize: '15px',
+                  fontWeight: '600',
+                }}
+              >
+                {doorsOpen ? '🚪 Закрыть двери' : '🚪 Открыть двери'}
+              </button>
+              
+              <button
+                onClick={() => setVentsOpen(!ventsOpen)}
+                style={{
+                  padding: '14px 18px',
+                  backgroundColor: ventsOpen ? '#9b59b6' : '#8e44ad',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontSize: '15px',
+                  fontWeight: '600',
+                }}
+              >
+                {ventsOpen ? '💨 Закрыть форточки' : '💨 Открыть форточки'}
+              </button>
+              
+              <button
+                onClick={() => navigate('/dashboard')}
+                style={{
+                  padding: '14px 18px',
+                  backgroundColor: '#6c757d',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontSize: '15px',
+                  fontWeight: '600',
+                }}
+              >
+                📁 Личный кабинет
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 3D View */}
       <ModelView $isMobile={isMobile}>
         <ErrorBoundary>
-          <Canvas
-            shadows
-            ref={canvasRef}
-            style={{ width: '100%', height: '100%' }}
-            camera={{
-              position: [
-                params.width * (isMobile ? 1.2 : 1.5),
-                params.height * (isMobile ? 1.0 : 1.2),
-                params.length * (isMobile ? 1.2 : 1.5)
-              ],
-              fov: isMobile ? 60 : 50,
-              near: 0.1,
-              far: 1000
-            }}
-            onCreated={({ scene }) => { sceneRef.current = scene }}
-          >
-            <Sky distance={10000} sunPosition={[10, 20, 10]} />
-            <Ground groundType={params.groundType} />
-			<ambientLight intensity={1.2} />
-			<directionalLight
-			  position={[10, 20, 10]}
-			  intensity={1.2}
-			  castShadow
-			  shadow-mapSize-width={1024}
-			  shadow-mapSize-height={1024}
-			/>
-			<directionalLight position={[-10, 10, -10]} intensity={0.6} />
+          {!isAuthenticated ? (
+            <GreenhouseDemo doorsOpen={doorsOpen} ventsOpen={ventsOpen} />
+          ) : (
+            <Canvas
+              shadows
+              ref={canvasRef}
+              style={{ width: '100%', height: '100%' }}
+              camera={{
+                position: [
+                  params.width * (isMobile ? 1.2 : 1.5),
+                  params.height * (isMobile ? 1.0 : 1.2),
+                  params.length * (isMobile ? 1.2 : 1.5)
+                ],
+                fov: isMobile ? 60 : 50,
+                near: 0.1,
+                far: 1000
+              }}
+              onCreated={({ scene }) => { sceneRef.current = scene }}
+            >
+              <Sky distance={10000} sunPosition={[10, 20, 10]} />
+              <Ground groundType={params.groundType} />
+              <ambientLight intensity={1.2} />
+              <directionalLight
+                position={[10, 20, 10]}
+                intensity={1.2}
+                castShadow
+                shadow-mapSize-width={1024}
+                shadow-mapSize-height={1024}
+              />
+              <directionalLight position={[-10, 10, -10]} intensity={0.6} />
 
-            {params.type === 'arched' && <ArchedRoof params={params} />}
-            {params.type === 'gable' && <GableRoof params={params} />}
-			<GreenhouseWalls
-			  params={params}
-			  doorsOpen={doorsOpen}
-			  setDoorsOpen={setDoorsOpen}
-			  ventsOpen={ventsOpen}
-			/>
+              {params.type === 'arched' && <ArchedRoof params={params} />}
+              {params.type === 'gable' && <GableRoof params={params} />}
+              <GreenhouseWalls
+                params={params}
+                doorsOpen={doorsOpen}
+                setDoorsOpen={setDoorsOpen}
+                ventsOpen={ventsOpen}
+              />
+              <GreenhouseFoundation params={params} />
 
-
-            <OrbitControls
-              minDistance={Math.max(params.width, params.length) * 0.8}
-              maxDistance={Math.max(params.width, params.length) * 3}
-              enablePan={!isMobile}
-              target={[0, params.height / 2, 0]}
-            />
-          </Canvas>
+              <OrbitControls
+                minDistance={Math.max(params.width, params.length) * 0.8}
+                maxDistance={Math.max(params.width, params.length) * 3}
+                enablePan={!isMobile}
+                target={[0, params.height / 2, 0]}
+              />
+            </Canvas>
+          )}
         </ErrorBoundary>
-
-        {/* Кнопки действий - удалены, теперь только в 3 точках */}
-
       </ModelView>
 
+      {/* Модальные окна */}
       <SaveProjectModal />
-
-      <Modal
-        isOpen={isCostModalOpen}
-        onRequestClose={() => setIsCostModalOpen(false)}
-        style={{
-          overlay: {
-            backgroundColor: 'rgba(0,0,0,0.5)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1000
-          },
-          content: {
-            position: 'relative',
-            inset: 'auto',
-            width: '90%',
-            maxWidth: '800px',
-            maxHeight: '90vh',
-            overflow: 'auto',
-            borderRadius: '8px',
-            padding: '0',
-            border: 'none'
-          }
-        }}
-      >
-        <div ref={printRef}>
-          <PrintComponent />
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'center', padding: '20px' }}>
-          <button 
-            onClick={handlePrint}
-            style={{
-              padding: '10px 20px',
-              backgroundColor: '#3498db',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              marginRight: '10px'
-            }}
-          >
-            Печать
-          </button>
-          <button 
-            onClick={() => setIsCostModalOpen(false)}
-            style={{
-              padding: '10px 20px',
-              backgroundColor: '#e74c3c',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer'
-            }}
-          >
-            Закрыть
-          </button>
-        </div>
-      </Modal>
+      <LoginModal />
     </Container>
-	</>
-  );
+  </>
+);
 };
 
 export default React.memo(GreenhouseModel);

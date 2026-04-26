@@ -36,7 +36,7 @@ const ArchedTruss: React.FC<ArchedTrussProps> = ({ params, positionZ, isLast, ne
     const roofWidth = params.width + (params.overhang * 2);
     const upper: THREE.Vector3[] = [];
     const lower: THREE.Vector3[] = [];
-    const segments = 48;
+    const segments = 400;
     
     for (let i = 0; i <= segments; i++) {
       const t = i / segments;

@@ -76,8 +76,8 @@ export const LoginPage = () => {
               <a href="tel:+79827467272" className="login-header__phone">
                 +7 (982) 746-72-72
               </a>
-              <a href="mailto:info@giga-nt.ru" className="login-header__email">
-                info@giga-nt.ru
+              <a href="mailto:corp-dinastiia84275@yandex.ru" className="login-header__email">
+                corp-dinastiia84275@yandex.ru
               </a>
             </div>
           </div>

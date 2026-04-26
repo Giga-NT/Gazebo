@@ -27,7 +27,8 @@ const GazeboTrusses: React.FC<{ params: GazeboParams }> = ({ params }) => {
   );
 
   const getRoofPoints = (zPos: number): THREE.Vector3[] => {
-    return getArchPoints3D(params.roofType, totalWidth, params.roofHeight, zPos, params.height, 12);
+    // Фермы строятся от params.height (нижняя точка)
+    return getArchPoints3D(params.roofType, totalWidth, params.roofHeight, zPos, params.height, 120);
   };
 
   const generateTrusses = useMemo(() => {
@@ -71,7 +72,7 @@ const GazeboTrusses: React.FC<{ params: GazeboParams }> = ({ params }) => {
     const trussDimensions = getTubeDimensions(params.trussTubeSize);
     const roofDimensions = getTubeDimensions(params.roofTubeSize);
     const halfThickness = trussDimensions.thickness / 2;
-    const segments = 8;
+    const segments = 6;
 
     return trussPositions.flatMap((zPos, trussIndex) => {
       const roofPoints = getRoofPoints(zPos);

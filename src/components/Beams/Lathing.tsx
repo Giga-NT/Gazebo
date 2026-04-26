@@ -1,126 +1,129 @@
 import React, { useMemo } from 'react';
 import * as THREE from 'three';
 import { CanopyParams } from '../../types/types';
-import Beam from './Beam';
 
 const Lathing: React.FC<{ params: CanopyParams }> = ({ params }) => {
   const getTubeDimensions = (size: string) => {
-    const dimensions = {
+    const dimensions: Record<string, { width: number; thickness: number }> = {
       '40x20': { width: 0.04, thickness: 0.02 },
       '40x40': { width: 0.04, thickness: 0.04 },
       '50x50': { width: 0.05, thickness: 0.05 },
-      '60x60': { width: 0.06, thickness: 0.06 }
-    }[size];
-    return dimensions || { width: 0.04, thickness: 0.02 };
+      '60x60': { width: 0.06, thickness: 0.06 },
+      '80x80': { width: 0.08, thickness: 0.08 },
+      '100x100': { width: 0.1, thickness: 0.1 },
+    };
+    return dimensions[size] || { width: 0.04, thickness: 0.02 };
   };
 
-  const roofTubeDimensions = getTubeDimensions(params.roofTubeSize);
   const lathingDimensions = getTubeDimensions(params.lathingTubeSize);
   
-  // Обрешетка лежит ПОВЕРХ верхнего пояса
-  const yOffset = roofTubeDimensions.thickness / 2 + lathingDimensions.thickness / 2;
+  // Размер трубы верхнего пояса (на который опирается обрешетка)
+  const roofTubeDimensions = getTubeDimensions(params.roofTubeSize);
+  const upperChordHeight = roofTubeDimensions.thickness;
+  
+  // Труба обрешетки: ширина (по X), высота (по Y), длина (по Z)
+  const tubeWidth = lathingDimensions.width;
+  const tubeHeight = lathingDimensions.thickness;
+  
+  // Длина обрешетки = полная длина навеса + выступ за фермы
+  const trussThickness = upperChordHeight;
+  const trussOffset = trussThickness * 6; // Выступ на толщину фермы с каждой стороны
+  const tubeDepth = params.length + trussOffset;
 
-  // Позиции всех ферм
-  const trussPositions = useMemo(() => {
-    const positions: number[] = [];
-    if (params.trussCount === 1) {
-      positions.push(0);
-    } else {
-      const step = params.length / (params.trussCount - 1);
-      for (let i = 0; i < params.trussCount; i++) {
-        positions.push(-params.length / 2 + i * step);
-      }
-    }
-    return positions;
-  }, [params.length, params.trussCount]);
+  // Подъём обрешетки: половина толщины верхнего пояса + половина толщины обрешетки
+  const yOffset = upperChordHeight / 2 + tubeHeight / 2 + 0.003;
 
-  // Функция для получения точек верхнего пояса арки
-  const getArcPoints = (zPos: number): THREE.Vector3[] => {
+  // Функция получения высоты верхнего пояса в точке X
+  // Функция получения высоты ОСНОВНОГО ската
+  const getRoofY = (x: number): number => {
     const roofWidth = params.width + (params.overhang * 2);
-    const points: THREE.Vector3[] = [];
-    const segments = 50;
+    const t = (x + roofWidth / 2) / roofWidth;
     
-    for (let i = 0; i <= segments; i++) {
-      const t = i / segments;
-      const angle = t * Math.PI;
-      const x = -roofWidth / 2 + (roofWidth * t);
-      const y = params.roofHeight * Math.sin(angle);
+    switch (params.roofType) {
+      case 'arch':
+        const angle = t * Math.PI;
+        return params.height + params.roofHeight * Math.sin(angle);
       
-      // Точка на верхнем поясе со смещением
-      points.push(new THREE.Vector3(x, params.height + y + yOffset, zPos));
+      case 'gable': {
+        const halfWidth = roofWidth / 2;
+        const absX = Math.abs(x);
+        if (absX <= halfWidth) {
+          const t2 = absX / halfWidth;
+          return params.height + params.roofHeight * (1 - t2);
+        }
+        return params.height;
+      }
+      
+      case 'shed':
+        return params.height + t * params.roofHeight;
+      
+      case 'flat':
+        return params.height; // Плоская крыша - постоянная высота
+      
+      default:
+        return params.height + params.roofHeight;
     }
-    
-    return points;
   };
 
-  // Получаем точки для всех ферм
-  const allArcPoints = useMemo(() => {
-    return trussPositions.map(zPos => getArcPoints(zPos));
-  }, [trussPositions, params, yOffset]);
+  // Функция получения угла наклона в точке X
+  const getRoofAngleAt = (x: number): number => {
+    const roofWidth = params.width + (params.overhang * 2);
+    const delta = 0.05;
+    const x1 = Math.max(-roofWidth / 2, x - delta);
+    const x2 = Math.min(roofWidth / 2, x + delta);
+    const y1 = getRoofY(x1);
+    const y2 = getRoofY(x2);
+    return Math.atan2(y2 - y1, x2 - x1);
+  };
 
+  // Создаём обрешетку
   const lathingElements = useMemo(() => {
-    // Проверяем, что это арка (любого типа)
-    const isArch = params.roofType === 'arch' && 
-      (params.trussType === 'arched_narrow' || params.trussType === 'reinforced' || params.trussType === 'simple');
+    if (params.lathingStep === 0) return [];
     
-    if (params.lathingStep === 0 || !isArch) return null;
-
+    const elements: React.ReactElement[] = [];
     const roofWidth = params.width + (params.overhang * 2);
     const lathingCount = Math.ceil(roofWidth / params.lathingStep) + 1;
     const stepX = roofWidth / (lathingCount - 1);
     
-    const elements: React.ReactElement[] = [];
-
-    // Для каждого X создаем балку обрешетки
     for (let i = 0; i < lathingCount; i++) {
       const xPos = -roofWidth / 2 + i * stepX;
+      const yPos = getRoofY(xPos) + yOffset;
+      const angle = getRoofAngleAt(xPos);
       
-      // Собираем точки на всех фермах для этого X
-      const pointsAtX: { z: number; point: THREE.Vector3 }[] = [];
+      // Для разных типов крыш корректируем угол поворота
+      let finalAngle = angle;
       
-      for (let tIdx = 0; tIdx < trussPositions.length; tIdx++) {
-        const arcPoints = allArcPoints[tIdx];
-        const zPos = trussPositions[tIdx];
-        
-        // Находим Y для данного X на этой ферме
-        let yPos = params.height + yOffset;
-        for (let j = 0; j < arcPoints.length - 1; j++) {
-          const p1 = arcPoints[j];
-          const p2 = arcPoints[j + 1];
-          if (xPos >= p1.x && xPos <= p2.x) {
-            const t = (xPos - p1.x) / (p2.x - p1.x);
-            yPos = p1.y + t * (p2.y - p1.y);
-            break;
-          }
+      if (params.roofType === 'gable') {
+        const halfWidth = roofWidth / 2;
+        const absX = Math.abs(xPos);
+        // На коньке (центр) угол = 0
+        if (absX < 0.1) {
+          finalAngle = 0;
         }
-        
-        pointsAtX.push({ z: zPos, point: new THREE.Vector3(xPos, yPos, zPos) });
+      } else if (params.roofType === 'shed') {
+        // Односкатная - постоянный угол, но делаем его чуть меньше для лучшего вида
+        finalAngle = angle * 0.8;
       }
       
-      // Создаем балки между соседними фермами
-      for (let s = 0; s < pointsAtX.length - 1; s++) {
-        const start = pointsAtX[s].point;
-        const end = pointsAtX[s + 1].point;
-        
-        if (start.distanceTo(end) > 0.01) {
-          elements.push(
-            <Beam
-              key={`lathing-${i}-${s}`}
-              start={start}
-              end={end}
-              dimensions={lathingDimensions}
-              rotationOffset={Math.PI / 2}
-              color={params.frameColor}
-            />
-          );
-        }
-      }
+      const geometry = new THREE.BoxGeometry(tubeWidth, tubeHeight, tubeDepth);
+      const material = new THREE.MeshStandardMaterial({ 
+        color: new THREE.Color(params.frameColor),
+        metalness: 0.5,
+        roughness: 0.7
+      });
+      
+      const mesh = new THREE.Mesh(geometry, material);
+      mesh.position.set(xPos, yPos, 0);
+      mesh.castShadow = true;
+      mesh.rotation.z = finalAngle;
+      
+      elements.push(<primitive key={`lathing-${i}`} object={mesh} />);
     }
     
     return elements;
-  }, [params, trussPositions, allArcPoints, lathingDimensions, yOffset]);
+  }, [params, tubeWidth, tubeHeight, tubeDepth, yOffset]);
 
   return <>{lathingElements}</>;
 };
 
-export default Lathing;
+export default React.memo(Lathing);

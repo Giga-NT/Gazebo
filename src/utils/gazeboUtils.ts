@@ -119,17 +119,47 @@ export function getRoofProfilePoints(
 /**
  * Расчёт 3D точек для арки на заданной позиции Z
  */
-export function getArchPoints3D(
-  type: RoofType,
+export const getArchPoints3D = (
+  roofType: string,
   totalWidth: number,
   roofHeight: number,
-  zPosition: number,
+  zPos: number,
   baseHeight: number,
-  segments: number = 16
-): THREE.Vector3[] {
-  const profilePoints = getRoofProfilePoints(type, totalWidth, roofHeight, segments);
-  return profilePoints.map(p => new THREE.Vector3(p.x, baseHeight + p.y, zPosition));
-}
+  segments: number = 20
+): THREE.Vector3[] => {
+  const points: THREE.Vector3[] = [];
+  
+  for (let i = 0; i <= segments; i++) {
+    const t = i / segments;
+    const x = -totalWidth / 2 + t * totalWidth;
+    let y = baseHeight;
+    
+    switch (roofType) {
+      case 'arched': {
+        const angle = t * Math.PI;
+        y = baseHeight + roofHeight * Math.sin(angle);
+        break;
+      }
+      case 'gable': {
+        const halfWidth = totalWidth / 2;
+        const absX = Math.abs(x);
+        if (absX <= halfWidth) {
+          const t2 = absX / halfWidth;
+          y = baseHeight + roofHeight * (1 - t2);
+        }
+        break;
+      }
+      case 'single': {
+        y = baseHeight + t * roofHeight;
+        break;
+      }
+    }
+    
+    points.push(new THREE.Vector3(x, y, zPos));
+  }
+  
+  return points;
+};
 
 // ============================================================================
 // Позиции конструктивных элементов

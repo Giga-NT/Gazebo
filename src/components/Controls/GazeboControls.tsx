@@ -187,14 +187,72 @@ const GazeboControls: React.FC<GazeboControlsProps> = ({ params, onChange }) => 
             style={{ width: '100%' }}
           />
         </div>
+      </ControlSection>
 
-        <CheckboxContainer>
+      {/* МАТЕРИАЛ КРОВЛИ - НОВЫЙ БЛОК */}
+      <ControlSection>
+        <SectionTitle>🏠 Материал кровли</SectionTitle>
+        
+        <InputGroup>
+          <Label>Тип кровельного материала</Label>
+          <Select
+            value={(params as any).roofMaterial || 'metal'}
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => onChange('roofMaterial' as any, e.target.value)}
+          >
+            <option value="metal">🔩 Профлист (металл)</option>
+            <option value="tile">🧱 Черепица</option>
+            <option value="polycarbonate">✨ Поликарбонат</option>
+          </Select>
+        </InputGroup>
+
+        {renderColorPicker('Цвет кровли', params.roofColor, 'roof', (color) => onChange('roofColor', color))}
+
+        {(params as any).roofMaterial === 'metal' && (
+          <div style={{ 
+            padding: '10px', 
+            background: '#f0f4f8', 
+            borderRadius: '8px',
+            fontSize: '12px',
+            color: '#2c3e50',
+            marginTop: '10px'
+          }}>
+            💡 Профлист: рифлёная поверхность, высокая прочность, металлический блеск
+          </div>
+        )}
+
+        {(params as any).roofMaterial === 'tile' && (
+          <div style={{ 
+            padding: '10px', 
+            background: '#f0f4f8', 
+            borderRadius: '8px',
+            fontSize: '12px',
+            color: '#2c3e50',
+            marginTop: '10px'
+          }}>
+            💡 Черепица: классический вид, текстура с рядами, матовая поверхность
+          </div>
+        )}
+
+        {(params as any).roofMaterial === 'polycarbonate' && (
+          <div style={{ 
+            padding: '10px', 
+            background: '#f0f4f8', 
+            borderRadius: '8px',
+            fontSize: '12px',
+            color: '#2c3e50',
+            marginTop: '10px'
+          }}>
+            💡 Поликарбонат: полупрозрачный, сотовый эффект, современный вид
+          </div>
+        )}
+
+        <CheckboxContainer style={{ marginTop: '15px' }}>
           <CheckboxItem onClick={() => onChange('showRoofCover', !params.showRoofCover)}>
             <StyledCheckbox
               checked={params.showRoofCover || false}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange('showRoofCover', e.target.checked)}
             />
-            <Label>Показать поликарбонатное покрытие</Label>
+            <Label>Показать кровельное покрытие</Label>
           </CheckboxItem>
         </CheckboxContainer>
       </ControlSection>

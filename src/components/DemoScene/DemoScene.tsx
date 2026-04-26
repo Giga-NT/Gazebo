@@ -66,17 +66,15 @@ const Ground = ({ groundType }: { groundType: 'grass' | 'wood' | 'concrete' }) =
 };
 
 // ============================================================================
-// CANOPY FOUNDATION (тротуарная плитка с текстурой)
+// CANOPY FOUNDATION
 // ============================================================================
 const CanopyFoundation: React.FC<{ width: number; length: number }> = ({ width, length }) => {
-  // Создаём текстуру плитки программно (без roundRect)
   const pavementTexture = useMemo(() => {
     const canvas = document.createElement('canvas');
     canvas.width = 512;
     canvas.height = 512;
     const ctx = canvas.getContext('2d')!;
     
-    // Базовый цвет
     ctx.fillStyle = '#A0896E';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
@@ -89,7 +87,6 @@ const CanopyFoundation: React.FC<{ width: number; length: number }> = ({ width, 
         const x = col * tileSize;
         const y = row * tileSize;
         
-        // Случайный оттенок
         const variation = 25;
         const r = 160 + Math.random() * variation;
         const g = 137 + Math.random() * variation;
@@ -98,12 +95,10 @@ const CanopyFoundation: React.FC<{ width: number; length: number }> = ({ width, 
         ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
         ctx.fillRect(x + 4, y + 4, tileSize - 8, tileSize - 8);
         
-        // Тёмная кромка (шов)
         ctx.strokeStyle = 'rgba(0,0,0,0.2)';
         ctx.lineWidth = 2;
         ctx.strokeRect(x + 4, y + 4, tileSize - 8, tileSize - 8);
         
-        // Светлая кромка (объём)
         ctx.strokeStyle = 'rgba(255,255,255,0.15)';
         ctx.lineWidth = 1;
         ctx.strokeRect(x + 5, y + 5, tileSize - 10, tileSize - 10);
@@ -142,8 +137,9 @@ const CanopyFoundation: React.FC<{ width: number; length: number }> = ({ width, 
     </group>
   );
 };
+
 // ============================================================================
-// CANOPY LATHING COMPONENT (обрешётка с шагом 0.5м)
+// CANOPY LATHING
 // ============================================================================
 const CanopyLathing: React.FC<{
   width: number;
@@ -205,7 +201,7 @@ const CanopyLathing: React.FC<{
 };
 
 // ============================================================================
-// CANOPY DEMO COMPONENT (арочный, 8 стоек по 4 с каждой стороны, 4 усиленные фермы, с обрешёткой)
+// CANOPY DEMO CONTENT
 // ============================================================================
 const CanopyDemoContent: React.FC = () => {
   const isMobile = React.useContext(MobileContext);
@@ -216,7 +212,6 @@ const CanopyDemoContent: React.FC = () => {
   const overhang = 0.4;
   const trussCount = 4;
   const lathingStep = 0.5;
-
   const frameColor = '#1e3a5f';
   const roofColor = '#00a896';
   const pillarDimensions = { width: 0.1, thickness: 0.1 };
@@ -272,27 +267,22 @@ const CanopyDemoContent: React.FC = () => {
       const points = getArchPoints(zPos);
       const totalWidth = width + overhang * 2;
       
-      // Верхний пояс арки
       for (let i = 0; i < points.length - 1; i++) {
         elements.push(<Beam key={`truss-arch-${trussIdx}-${i}`} start={points[i]} end={points[i + 1]} dimensions={trussDimensions} color={frameColor} />);
       }
       
-      // Нижний пояс (затяжка)
       const lowerStart = new THREE.Vector3(-totalWidth / 2, height, zPos);
       const lowerEnd = new THREE.Vector3(totalWidth / 2, height, zPos);
       elements.push(<Beam key={`truss-lower-${trussIdx}`} start={lowerStart} end={lowerEnd} dimensions={trussDimensions} color={frameColor} />);
       
-      // Ферма с симметричными раскосами (ёлочка)
-      const verticalCount = 6; // 6 вертикальных стоек
+      const verticalCount = 6;
       const panelWidth = totalWidth / verticalCount;
       
-      // Вертикальные стойки (строго вертикально)
       for (let i = 1; i < verticalCount; i++) {
         const x = -totalWidth / 2 + i * panelWidth;
         const t = i / verticalCount;
         const archIndex = Math.floor(t * (points.length - 1));
         const archPoint = points[archIndex];
-        
         elements.push(
           <Beam
             key={`truss-vertical-${trussIdx}-${i}`}
@@ -304,8 +294,7 @@ const CanopyDemoContent: React.FC = () => {
         );
       }
       
-      // Диагональные раскосы (симметрично от центра - ёлочка)
-      const halfCount = verticalCount / 2; // 3
+      const halfCount = verticalCount / 2;
       for (let i = 0; i < verticalCount; i++) {
         const x1 = -totalWidth / 2 + i * panelWidth;
         const x2 = -totalWidth / 2 + (i + 1) * panelWidth;
@@ -320,8 +309,6 @@ const CanopyDemoContent: React.FC = () => {
         const lowerLeft = new THREE.Vector3(x1, height, zPos);
         const lowerRight = new THREE.Vector3(x2, height, zPos);
         
-        // Левая половина: ↗ (от низа левой к верху правой)
-        // Правая половина: ↖ (от низа правой к верху левой)
         if (i < halfCount) {
           elements.push(
             <Beam
@@ -356,7 +343,7 @@ const CanopyDemoContent: React.FC = () => {
     const backRidge = lastPoints[Math.floor(lastPoints.length / 2)];
     elements.push(<Beam key="long-ridge" start={frontRidge} end={backRidge} dimensions={roofDimensions} color={frameColor} />);
     elements.push(<Beam key="long-left" start={firstPoints[0]} end={lastPoints[0]} dimensions={roofDimensions} color={frameColor} />);
-    elements.push(<Beam key="long-right" start={firstPoints[firstPoints.length - 1]} end={lastPoints[lastPoints.length - 1]} dimensions={roofDimensions} color={frameColor} />);
+    elements.push(<Beam key="long-right" start={firstPoints[firstPoints.length - 1]} end={lastPoints[firstPoints.length - 1]} dimensions={roofDimensions} color={frameColor} />);
     for (let side = 0; side < 2; side++) {
       const xPos = side === 0 ? -width / 2 : width / 2;
       for (let i = 0; i < trussPositions.length - 1; i++) {
@@ -447,8 +434,6 @@ const CanopyDemoContent: React.FC = () => {
         {longitudinalBeams}
         {lathing}
         {roofCover}
-        
-        {/* Основание как у беседки, но с брусчаткой */}
         <CanopyFoundation width={width} length={length} />
       </group>
 
@@ -467,12 +452,10 @@ const CanopyDemoContent: React.FC = () => {
   );
 };
 
-
 // ============================================================================
-// GAZEBO FOUNDATION (тротуарная плитка, как у навеса)
+// GAZEBO PAVEMENT FOUNDATION
 // ============================================================================
 const GazeboPavementFoundation: React.FC<{ width: number; length: number }> = ({ width, length }) => {
-  // Текстура плитки (та же, что у навеса)
   const pavementTexture = useMemo(() => {
     const canvas = document.createElement('canvas');
     canvas.width = 512;
@@ -516,7 +499,6 @@ const GazeboPavementFoundation: React.FC<{ width: number; length: number }> = ({
     return texture;
   }, [width, length]);
 
-  // Фундамент (бетонная подушка)
   const foundation = (
     <mesh position={[0, -0.15, 0]} receiveShadow castShadow>
       <boxGeometry args={[width + 0.8, 0.15, length + 0.8]} />
@@ -524,7 +506,6 @@ const GazeboPavementFoundation: React.FC<{ width: number; length: number }> = ({
     </mesh>
   );
 
-  // Пол (тротуарная плитка)
   const floor = (
     <mesh position={[0, 0, 0]} receiveShadow castShadow>
       <boxGeometry args={[width, 0.05, length]} />
@@ -545,7 +526,7 @@ const GazeboPavementFoundation: React.FC<{ width: number; length: number }> = ({
 };
 
 // ============================================================================
-// GAZEBO DEMO COMPONENT
+// GAZEBO DEMO CONTENT
 // ============================================================================
 const GazeboDemoContent: React.FC = () => {
   const isMobile = React.useContext(MobileContext);
@@ -633,7 +614,6 @@ const GazeboDemoContent: React.FC = () => {
         </>
       )}
 
-      {/* Вместо GazeboFoundation используем плитку */}
       <GazeboPavementFoundation width={demoParams.width} length={demoParams.length} />
 
       <OrbitControls
@@ -652,21 +632,26 @@ const GazeboDemoContent: React.FC = () => {
 };
 
 // ============================================================================
-// GREENHOUSE DEMO COMPONENT
+// GREENHOUSE DEMO CONTENT (ТОЛЬКО 3D-КОНТЕНТ, БЕЗ HTML)
 // ============================================================================
-const GreenhouseDemoContent: React.FC = () => {
+const GreenhouseDemoContent: React.FC<{ 
+  width: number; 
+  length: number; 
+  height: number; 
+  type: 'arched' | 'gable' 
+}> = ({ width, length, height, type }) => {
   const isMobile = React.useContext(MobileContext);
   const [doorsOpen] = useState(false);
   const [ventsOpen] = useState(false);
 
   const demoParams: GreenhouseParams = useMemo<GreenhouseParams>(() => ({
-    width: 3,
-    length: 5,
-    height: 3,
+    width,
+    length,
+    height,
     wallHeight: 1.8,
     archHeight: 1.2,
     trussCount: 4,
-    type: 'arched',
+    type,
     frameMaterial: 'metal',
     coverMaterial: 'polycarbonate',
     foundationType: 'concrete',
@@ -694,7 +679,7 @@ const GreenhouseDemoContent: React.FC = () => {
       height: 0.5,
       zOffset: -0.01,
     },
-  }), []);
+  }), [width, length, height, type]);
 
   return (
     <>
@@ -712,21 +697,19 @@ const GreenhouseDemoContent: React.FC = () => {
 
       {demoParams.type === 'arched' && <ArchedRoof params={demoParams} />}
       {demoParams.type === 'gable' && <GableRoof params={demoParams} />}
-      
       <GreenhouseWalls
         params={demoParams}
         doorsOpen={doorsOpen}
         setDoorsOpen={() => {}}
         ventsOpen={ventsOpen}
       />
-
-
+      <GreenhouseFoundation params={demoParams} />
 
       <OrbitControls
-        minDistance={isMobile ? Math.max(demoParams.width, demoParams.length) * 1.2 : Math.max(demoParams.width, demoParams.length) * 0.8}
-        maxDistance={isMobile ? Math.max(demoParams.width, demoParams.length) * 4 : Math.max(demoParams.width, demoParams.length) * 3}
+        minDistance={isMobile ? Math.max(width, length) * 1.2 : Math.max(width, length) * 0.8}
+        maxDistance={isMobile ? Math.max(width, length) * 4 : Math.max(width, length) * 3}
         enablePan={false}
-        target={[0, demoParams.height / 2, 0]}
+        target={[0, height / 2, 0]}
         autoRotate={!isMobile}
         autoRotateSpeed={0.5}
         touches={isMobile ? { ONE: 'rotate', TWO: 'dolly' } as any : undefined}
@@ -734,28 +717,6 @@ const GreenhouseDemoContent: React.FC = () => {
         zoomSpeed={1.2}
       />
     </>
-  );
-};
-
-// ============================================================================
-// SCENE CONTENT
-// ============================================================================
-const DemoSceneContent: React.FC<{ modelType: ModelType; isMobile: boolean }> = ({ modelType, isMobile }) => {
-  const { scene } = useThree();
-
-  useEffect(() => {
-    scene.background = new THREE.Color('#f0f2f5');
-    scene.fog = new THREE.Fog('#f0f2f5', 10, 50);
-  }, [scene]);
-
-  return (
-    <MobileContext.Provider value={isMobile}>
-      {modelType === 'canopy' && <CanopyDemoContent />}
-      {modelType === 'gazebo' && <GazeboDemoContent />}
-      {modelType === 'greenhouse' && <GreenhouseDemoContent />}
-
-      <ContactShadows position={[0, -1.5, 0]} opacity={0.4} scale={20} blur={2} far={4.5} />
-    </MobileContext.Provider>
   );
 };
 
@@ -770,11 +731,52 @@ const LoadingSpinner: React.FC = () => (
 );
 
 // ============================================================================
-// MAIN DEMO SCENE COMPONENT
+// DEMO SCENE CONTENT (ТОЛЬКО 3D, HTML ВЫНЕСЕН)
+// ============================================================================
+const DemoSceneContent: React.FC<{ 
+  modelType: ModelType; 
+  isMobile: boolean;
+  greenhouseWidth: number;
+  greenhouseLength: number;
+  greenhouseHeight: number;
+  greenhouseType: 'arched' | 'gable';
+}> = ({ modelType, isMobile, greenhouseWidth, greenhouseLength, greenhouseHeight, greenhouseType }) => {
+  const { scene } = useThree();
+
+  useEffect(() => {
+    scene.background = new THREE.Color('#f0f2f5');
+    scene.fog = new THREE.Fog('#f0f2f5', 10, 50);
+  }, [scene]);
+
+  return (
+    <MobileContext.Provider value={isMobile}>
+      {modelType === 'canopy' && <CanopyDemoContent />}
+      {modelType === 'gazebo' && <GazeboDemoContent />}
+      {modelType === 'greenhouse' && (
+        <GreenhouseDemoContent 
+          width={greenhouseWidth}
+          length={greenhouseLength}
+          height={greenhouseHeight}
+          type={greenhouseType}
+        />
+      )}
+      <ContactShadows position={[0, -1.5, 0]} opacity={0.4} scale={20} blur={2} far={4.5} />
+    </MobileContext.Provider>
+  );
+};
+
+// ============================================================================
+// ГЛАВНЫЙ КОМПОНЕНТ ДЕМО-СЦЕНЫ
 // ============================================================================
 export const DemoScene: React.FC = () => {
   const [modelType, setModelType] = useState<ModelType>('gazebo');
   const [isMobile, setIsMobile] = useState(false);
+  
+  // Состояния для параметров теплицы
+  const [greenhouseWidth, setGreenhouseWidth] = useState(3);
+  const [greenhouseLength, setGreenhouseLength] = useState(4);
+  const [greenhouseHeight, setGreenhouseHeight] = useState(2.5);
+  const [greenhouseType, setGreenhouseType] = useState<'arched' | 'gable'>('arched');
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -783,11 +785,75 @@ export const DemoScene: React.FC = () => {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  // Функция полноэкранного режима
+  const toggleFullscreen = () => {
+    const container = document.querySelector('.demo-scene__canvas-container');
+    if (!container) return;
+    
+    if (!document.fullscreenElement) {
+      container.requestFullscreen().catch(err => {
+        console.error(`Ошибка при открытии полноэкранного режима: ${err.message}`);
+      });
+    } else {
+      document.exitFullscreen();
+    }
+  };
+
   const models: { type: ModelType; label: string; icon: string }[] = [
     { type: 'canopy', label: 'Навес', icon: '🏠' },
     { type: 'gazebo', label: 'Беседка', icon: '🏡' },
     { type: 'greenhouse', label: 'Теплица', icon: '🌱' },
   ];
+
+  // Стили для панели управления теплицей
+  const controlsStyle: React.CSSProperties = {
+    position: 'absolute',
+    bottom: '20px',
+    right: '20px',
+    background: 'rgba(0,0,0,0.7)',
+    backdropFilter: 'blur(10px)',
+    color: 'white',
+    padding: '12px 16px',
+    borderRadius: '12px',
+    zIndex: 100,
+    fontSize: '12px',
+    minWidth: '180px',
+    pointerEvents: 'auto',
+  };
+
+  const labelStyle: React.CSSProperties = {
+    display: 'flex',
+    justifyContent: 'space-between',
+    marginBottom: '8px',
+    gap: '10px',
+  };
+
+  const buttonRowStyle: React.CSSProperties = {
+    display: 'flex',
+    gap: '8px',
+    marginTop: '4px',
+  };
+
+  const activeButtonStyle: React.CSSProperties = {
+    flex: 1,
+    padding: '6px',
+    borderRadius: '6px',
+    border: 'none',
+    background: '#00a896',
+    color: 'white',
+    cursor: 'pointer',
+    fontWeight: 'bold',
+  };
+
+  const inactiveButtonStyle: React.CSSProperties = {
+    flex: 1,
+    padding: '6px',
+    borderRadius: '6px',
+    border: 'none',
+    background: '#555',
+    color: '#ccc',
+    cursor: 'pointer',
+  };
 
   if (isMobile) {
     return (
@@ -816,6 +882,16 @@ export const DemoScene: React.FC = () => {
             <span className="demo-scene__btn-label">{model.label}</span>
           </button>
         ))}
+        
+        {/* Кнопка полноэкранного режима */}
+        <button
+          className="demo-scene__btn demo-scene__fullscreen-btn"
+          onClick={toggleFullscreen}
+          title="Полноэкранный режим"
+        >
+          <span className="demo-scene__btn-icon">⛶</span>
+          <span className="demo-scene__btn-label">На весь экран</span>
+        </button>
       </div>
 
       <div className="demo-scene__canvas-container">
@@ -828,17 +904,104 @@ export const DemoScene: React.FC = () => {
             onCreated={({ gl }) => {
               gl.domElement.addEventListener('webglcontextlost', (event) => {
                 event.preventDefault();
-                console.warn('WebGL context lost, recovering...');
+                console.warn('WebGL context lost, reloading page...');
+                
+                const hint = document.querySelector('.demo-scene__hint') as HTMLElement | null;
+                if (hint) {
+                  hint.innerHTML = '⚠️ Перезагрузка 3D... ⚠️';
+                  hint.style.background = 'rgba(255, 100, 100, 0.9)';
+                  hint.style.color = 'white';
+                }
+                
+                setTimeout(() => window.location.reload(), 300);
               });
+              
               gl.domElement.addEventListener('webglcontextrestored', () => {
                 console.log('WebGL context restored');
               });
             }}
           >
-            <DemoSceneContent modelType={modelType} isMobile={isMobile} />
+            <DemoSceneContent 
+              modelType={modelType}
+              isMobile={isMobile}
+              greenhouseWidth={greenhouseWidth}
+              greenhouseLength={greenhouseLength}
+              greenhouseHeight={greenhouseHeight}
+              greenhouseType={greenhouseType}
+            />
           </Canvas>
         </Suspense>
       </div>
+
+      {/* HTML-панель управления для теплицы */}
+      {modelType === 'greenhouse' && (
+        <div style={controlsStyle}>
+          <div style={{ fontWeight: 'bold', marginBottom: '8px', textAlign: 'center' }}>
+            🌱 Демо-теплица
+          </div>
+          
+          <div style={labelStyle}>
+            <span>📏 Ширина:</span>
+            <input
+              type="range"
+              min="2"
+              max="5"
+              step="0.2"
+              value={greenhouseWidth}
+              onChange={(e) => setGreenhouseWidth(parseFloat(e.target.value))}
+              style={{ width: '100px' }}
+            />
+            <span>{greenhouseWidth.toFixed(1)} м</span>
+          </div>
+          
+          <div style={labelStyle}>
+            <span>📐 Длина:</span>
+            <input
+              type="range"
+              min="3"
+              max="8"
+              step="0.2"
+              value={greenhouseLength}
+              onChange={(e) => setGreenhouseLength(parseFloat(e.target.value))}
+              style={{ width: '100px' }}
+            />
+            <span>{greenhouseLength.toFixed(1)} м</span>
+          </div>
+          
+          <div style={labelStyle}>
+            <span>📏 Высота:</span>
+            <input
+              type="range"
+              min="2"
+              max="3.5"
+              step="0.1"
+              value={greenhouseHeight}
+              onChange={(e) => setGreenhouseHeight(parseFloat(e.target.value))}
+              style={{ width: '100px' }}
+            />
+            <span>{greenhouseHeight.toFixed(1)} м</span>
+          </div>
+          
+          <div style={buttonRowStyle}>
+            <button
+              style={greenhouseType === 'arched' ? activeButtonStyle : inactiveButtonStyle}
+              onClick={() => setGreenhouseType('arched')}
+            >
+              Арочная
+            </button>
+            <button
+              style={greenhouseType === 'gable' ? activeButtonStyle : inactiveButtonStyle}
+              onClick={() => setGreenhouseType('gable')}
+            >
+              Двухскатная
+            </button>
+          </div>
+          
+          <div style={{ textAlign: 'center', marginTop: '8px', fontSize: '10px', color: '#aaa' }}>
+            🔓 Войдите для сохранения и полного доступа
+          </div>
+        </div>
+      )}
 
       <div className="demo-scene__hint">
         <span>🖱️</span> Вращайте мышкой для осмотра

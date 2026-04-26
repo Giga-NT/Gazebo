@@ -9,6 +9,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';  // ← ДОБАВЬТЕ ЭТУ СТРОКУ
 import App from './App';
 import './index.css';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
@@ -19,20 +20,21 @@ const root = ReactDOM.createRoot(
 
 root.render(
   <React.StrictMode>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
+    <HelmetProvider>           {/* ← ОБЕРНИТЕ BrowserRouter В HelmetProvider */}
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </HelmetProvider>
   </React.StrictMode>
 );
 
-// ✅ РЕГИСТРАЦИЯ SERVICE WORKER ДЛЯ PWA
+// Регистрация Service Worker для PWA
 serviceWorkerRegistration.register({
   onSuccess: (registration) => {
     console.log('✅ PWA установлено успешно!');
   },
   onUpdate: (registration) => {
     console.log('🔄 Доступно обновление PWA');
-    // Здесь можно показать уведомление пользователю
     if (window.confirm('Доступна новая версия приложения. Обновить?')) {
       window.location.reload();
     }

@@ -25,6 +25,7 @@ import { useLocation } from 'react-router-dom';
 import ArchedTruss from '../Beams/ArchedTruss';
 import LongitudinalBeams from '../Beams/LongitudinalBeams';
 import { calculateCanopyCost } from '../../utils/canopyCalculator';
+import SEO from '../SEO';
 
 // Стилизованные компоненты
 const Container = styled.div<{ $isMobile: boolean }>`
@@ -716,6 +717,15 @@ const FrameModel: React.FC = () => {
 
   return (
     <>
+      {/* ← СЮДА ДОБАВЬТЕ SEO */}
+      <SEO 
+        title="3D конструктор навеса для авто"
+        description="Создайте 3D модель навеса для автомобиля. ✅ Выберите размер, тип крыши, цвет. ✅ Мгновенный расчет стоимости. ✅ Визуализация в реальном времени."
+        keywords="конструктор навеса, навес для авто, арочный навес, расчет навеса, двускатный навес"
+        canonicalUrl="/frame"
+        ogType="website"
+      />
+      
       {/* Orientation Alert - блокировка портретного режима */}
       {showOrientationAlert && (
         <div className="frame-orientation-alert">

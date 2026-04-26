@@ -48,6 +48,7 @@ export interface GazeboParams {
   tableType?: 'simple' | 'model';
   overhang: number;
   tableRotation?: 0 | 90;
+  roofMaterial?: 'metal' | 'tile' | 'polycarbonate';
 
   // Поля для каркаса крыши
   constructionType: 'truss' | 'beam';
@@ -107,6 +108,7 @@ export const initialGazeboParams: GazeboParams = {
   lathingTubeSize: '40x20',
   showRoofCover: true,
   showGables: false,
+  roofMaterial: 'metal',
   pillarBendDirection: 'outward',
 };
 

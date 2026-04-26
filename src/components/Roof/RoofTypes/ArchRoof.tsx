@@ -9,7 +9,7 @@ interface ArchRoofProps {
 
 const ArchRoof: React.FC<ArchRoofProps> = ({ params, position }) => {
   const roofWidth = params.width + (params.overhang * 2);
-  const segments = 12;
+  const segments = 200;
   const points: THREE.Vector3[] = [];
 
   for (let i = 0; i <= segments; i++) {

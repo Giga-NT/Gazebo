@@ -202,3 +202,51 @@
     display: none !important;
   }
 }
+
+/* Демо-баннер */
+.demo-banner {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #00a896, #008f7f);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 40px;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  z-index: 100;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+/* Информационная панель для демо */
+.demo-info-panel {
+  position: fixed;
+  left: 20px;
+  bottom: 20px;
+  background: rgba(0,0,0,0.8);
+  backdrop-filter: blur(10px);
+  color: white;
+  padding: 16px;
+  border-radius: 16px;
+  max-width: 260px;
+  z-index: 100;
+  font-size: 14px;
+}
+
+.demo-info-panel button {
+  background: #00a896;
+  border: none;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 8px;
+  margin-top: 12px;
+  cursor: pointer;
+  width: 100%;
+}
+
+.demo-info-panel ul {
+  margin: 12px 0 0 20px;
+  padding: 0;
+}
